@@ -1,0 +1,554 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		A0E1CE272E33288300B5FEAC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0E1CE0D2E33288200B5FEAC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A0E1CE142E33288200B5FEAC;
+			remoteInfo = "Moji Slicer";
+		};
+		A0E1CE312E33288300B5FEAC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0E1CE0D2E33288200B5FEAC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A0E1CE142E33288200B5FEAC;
+			remoteInfo = "Moji Slicer";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A0E1CE152E33288200B5FEAC /* Moji Slicer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Moji Slicer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A0E1CE262E33288300B5FEAC /* Moji SlicerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Moji SlicerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A0E1CE302E33288300B5FEAC /* Moji SlicerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Moji SlicerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A0E1CE172E33288200B5FEAC /* Moji Slicer */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Moji Slicer";
+			sourceTree = "<group>";
+		};
+		A0E1CE292E33288300B5FEAC /* Moji SlicerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Moji SlicerTests";
+			sourceTree = "<group>";
+		};
+		A0E1CE332E33288300B5FEAC /* Moji SlicerUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Moji SlicerUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A0E1CE122E33288200B5FEAC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0E1CE232E33288300B5FEAC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0E1CE2D2E33288300B5FEAC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A0E1CE0C2E33288200B5FEAC = {
+			isa = PBXGroup;
+			children = (
+				A0E1CE172E33288200B5FEAC /* Moji Slicer */,
+				A0E1CE292E33288300B5FEAC /* Moji SlicerTests */,
+				A0E1CE332E33288300B5FEAC /* Moji SlicerUITests */,
+				A0E1CE162E33288200B5FEAC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A0E1CE162E33288200B5FEAC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A0E1CE152E33288200B5FEAC /* Moji Slicer.app */,
+				A0E1CE262E33288300B5FEAC /* Moji SlicerTests.xctest */,
+				A0E1CE302E33288300B5FEAC /* Moji SlicerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A0E1CE142E33288200B5FEAC /* Moji Slicer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A0E1CE3A2E33288300B5FEAC /* Build configuration list for PBXNativeTarget "Moji Slicer" */;
+			buildPhases = (
+				A0E1CE112E33288200B5FEAC /* Sources */,
+				A0E1CE122E33288200B5FEAC /* Frameworks */,
+				A0E1CE132E33288200B5FEAC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A0E1CE172E33288200B5FEAC /* Moji Slicer */,
+			);
+			name = "Moji Slicer";
+			packageProductDependencies = (
+			);
+			productName = "Moji Slicer";
+			productReference = A0E1CE152E33288200B5FEAC /* Moji Slicer.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A0E1CE252E33288300B5FEAC /* Moji SlicerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A0E1CE3D2E33288300B5FEAC /* Build configuration list for PBXNativeTarget "Moji SlicerTests" */;
+			buildPhases = (
+				A0E1CE222E33288300B5FEAC /* Sources */,
+				A0E1CE232E33288300B5FEAC /* Frameworks */,
+				A0E1CE242E33288300B5FEAC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A0E1CE282E33288300B5FEAC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A0E1CE292E33288300B5FEAC /* Moji SlicerTests */,
+			);
+			name = "Moji SlicerTests";
+			packageProductDependencies = (
+			);
+			productName = "Moji SlicerTests";
+			productReference = A0E1CE262E33288300B5FEAC /* Moji SlicerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A0E1CE2F2E33288300B5FEAC /* Moji SlicerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A0E1CE402E33288300B5FEAC /* Build configuration list for PBXNativeTarget "Moji SlicerUITests" */;
+			buildPhases = (
+				A0E1CE2C2E33288300B5FEAC /* Sources */,
+				A0E1CE2D2E33288300B5FEAC /* Frameworks */,
+				A0E1CE2E2E33288300B5FEAC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A0E1CE322E33288300B5FEAC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A0E1CE332E33288300B5FEAC /* Moji SlicerUITests */,
+			);
+			name = "Moji SlicerUITests";
+			packageProductDependencies = (
+			);
+			productName = "Moji SlicerUITests";
+			productReference = A0E1CE302E33288300B5FEAC /* Moji SlicerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A0E1CE0D2E33288200B5FEAC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A0E1CE142E33288200B5FEAC = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					A0E1CE252E33288300B5FEAC = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = A0E1CE142E33288200B5FEAC;
+					};
+					A0E1CE2F2E33288300B5FEAC = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = A0E1CE142E33288200B5FEAC;
+					};
+				};
+			};
+			buildConfigurationList = A0E1CE102E33288200B5FEAC /* Build configuration list for PBXProject "Moji Slicer" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A0E1CE0C2E33288200B5FEAC;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A0E1CE162E33288200B5FEAC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A0E1CE142E33288200B5FEAC /* Moji Slicer */,
+				A0E1CE252E33288300B5FEAC /* Moji SlicerTests */,
+				A0E1CE2F2E33288300B5FEAC /* Moji SlicerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A0E1CE132E33288200B5FEAC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0E1CE242E33288300B5FEAC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0E1CE2E2E33288300B5FEAC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A0E1CE112E33288200B5FEAC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0E1CE222E33288300B5FEAC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A0E1CE2C2E33288300B5FEAC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A0E1CE282E33288300B5FEAC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A0E1CE142E33288200B5FEAC /* Moji Slicer */;
+			targetProxy = A0E1CE272E33288300B5FEAC /* PBXContainerItemProxy */;
+		};
+		A0E1CE322E33288300B5FEAC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A0E1CE142E33288200B5FEAC /* Moji Slicer */;
+			targetProxy = A0E1CE312E33288300B5FEAC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A0E1CE382E33288300B5FEAC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A0E1CE392E33288300B5FEAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		A0E1CE3B2E33288300B5FEAC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Moji Slicer/Moji_Slicer.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Moji Slicer/Preview Content\"";
+				DEVELOPMENT_TEAM = L47R8QS488;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aaronyu.Moji-Slicer";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A0E1CE3C2E33288300B5FEAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Moji Slicer/Moji_Slicer.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Moji Slicer/Preview Content\"";
+				DEVELOPMENT_TEAM = L47R8QS488;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aaronyu.Moji-Slicer";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A0E1CE3E2E33288300B5FEAC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L47R8QS488;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aaronyu.Moji-SlicerTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Moji Slicer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Moji Slicer";
+			};
+			name = Debug;
+		};
+		A0E1CE3F2E33288300B5FEAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L47R8QS488;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aaronyu.Moji-SlicerTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Moji Slicer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Moji Slicer";
+			};
+			name = Release;
+		};
+		A0E1CE412E33288300B5FEAC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L47R8QS488;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aaronyu.Moji-SlicerUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "Moji Slicer";
+			};
+			name = Debug;
+		};
+		A0E1CE422E33288300B5FEAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L47R8QS488;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.aaronyu.Moji-SlicerUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "Moji Slicer";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A0E1CE102E33288200B5FEAC /* Build configuration list for PBXProject "Moji Slicer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0E1CE382E33288300B5FEAC /* Debug */,
+				A0E1CE392E33288300B5FEAC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A0E1CE3A2E33288300B5FEAC /* Build configuration list for PBXNativeTarget "Moji Slicer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0E1CE3B2E33288300B5FEAC /* Debug */,
+				A0E1CE3C2E33288300B5FEAC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A0E1CE3D2E33288300B5FEAC /* Build configuration list for PBXNativeTarget "Moji SlicerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0E1CE3E2E33288300B5FEAC /* Debug */,
+				A0E1CE3F2E33288300B5FEAC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A0E1CE402E33288300B5FEAC /* Build configuration list for PBXNativeTarget "Moji SlicerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0E1CE412E33288300B5FEAC /* Debug */,
+				A0E1CE422E33288300B5FEAC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A0E1CE0D2E33288200B5FEAC /* Project object */;
+}
