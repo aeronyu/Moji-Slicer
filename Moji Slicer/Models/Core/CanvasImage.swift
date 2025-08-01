@@ -8,8 +8,19 @@
 import SwiftUI
 import Foundation
 
-struct CanvasImage: Identifiable, Codable {
-    let id = UUID()
+// Extension to help with NSImage data conversion
+extension NSImage {
+    var pngData: Data? {
+        guard let tiffRepresentation = tiffRepresentation,
+              let bitmapImageRep = NSBitmapImageRep(data: tiffRepresentation) else {
+            return nil
+        }
+        return bitmapImageRep.representation(using: .png, properties: [:])
+    }
+}
+
+struct CanvasImage: Identifiable, Codable, Equatable {
+    var id = UUID() // Changed from let to var to fix Codable warning
     var imageName: String // Store filename instead of NSImage for codability
     var position: CGPoint
     var scale: Double
@@ -17,6 +28,16 @@ struct CanvasImage: Identifiable, Codable {
     
     // Store the actual image data (non-codable)
     private var _imageData: Data?
+    
+    // Equatable implementation
+    static func == (lhs: CanvasImage, rhs: CanvasImage) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.imageName == rhs.imageName &&
+               lhs.position == rhs.position &&
+               lhs.scale == rhs.scale &&
+               lhs.size == rhs.size &&
+               lhs._imageData == rhs._imageData
+    }
     
     // Non-codable computed property for the actual image
     var image: NSImage? {
@@ -32,7 +53,22 @@ struct CanvasImage: Identifiable, Codable {
         self.position = position
         self.scale = scale
         self.size = image.size
-        self._imageData = image.tiffRepresentation
+        
+        // Ensure we properly capture the image data
+        if let tiffData = image.tiffRepresentation {
+            self._imageData = tiffData
+            print("CanvasImage init: Successfully stored image data (\(tiffData.count) bytes)")
+        } else {
+            print("CanvasImage init: Warning - failed to get TIFF representation")
+            // Try alternative data formats
+            if let pngData = image.pngData {
+                self._imageData = pngData
+                print("CanvasImage init: Stored PNG data instead (\(pngData.count) bytes)")
+            } else {
+                print("CanvasImage init: Error - no image data could be stored")
+                self._imageData = nil
+            }
+        }
     }
     
     init(imageName: String, position: CGPoint, scale: Double, size: CGSize) {

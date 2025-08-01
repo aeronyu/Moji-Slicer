@@ -13,6 +13,10 @@ struct SidebarView: View {
     @Binding var canvasScale: Double
     @State private var selectedGridIndex: Int?
     
+    // Slicing callbacks
+    let onSliceAll: () -> Void
+    let onSliceSelected: (GridModel) -> Void
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
@@ -130,7 +134,7 @@ struct SidebarView: View {
                 
                 VStack(spacing: 8) {
                     Button("Slice All Grids") {
-                        // TODO: Implement slice all
+                        onSliceAll()
                     }
                     .buttonStyle(.borderedProminent)
                     .frame(maxWidth: .infinity)
@@ -138,7 +142,7 @@ struct SidebarView: View {
                     if let selectedIndex = selectedGridIndex,
                        selectedIndex < grids.count {
                         Button("Slice Selected Grid") {
-                            // TODO: Implement slice selected
+                            onSliceSelected(grids[selectedIndex])
                         }
                         .buttonStyle(.bordered)
                         .frame(maxWidth: .infinity)

@@ -24,6 +24,7 @@ struct ModernGridOverlayView: View {
     @State private var isResizing = false
     @State private var resizeHandle: ResizeHandle?
     @State private var originalFrame: CGRect = .zero
+    @State private var lastUpdateTime: Date = Date()
     
     enum ResizeHandle {
         case topLeft, topRight, bottomLeft, bottomRight
@@ -43,24 +44,41 @@ struct ModernGridOverlayView: View {
     
     var body: some View {
         ZStack {
-            // Main grid area
+            // Main grid area with enhanced animations
             Rectangle()
-                .stroke(grid.color, lineWidth: isSelected ? 3 : (isHovered ? 2 : 1.5))
+                .stroke(
+                    grid.color,
+                    lineWidth: isSelected ? 3 : (isHovered ? 2 : 1.5)
+                )
                 .fill(grid.color.opacity(isSelected ? 0.15 : (isHovered ? 0.08 : 0.05)))
                 .frame(width: displayFrame.width, height: displayFrame.height)
                 .position(
                     x: displayFrame.midX,
                     y: displayFrame.midY
                 )
+                .scaleEffect(isSelected ? 1.02 : (isHovered ? 1.01 : 1.0))
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+                .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isHovered)
+                .shadow(
+                    color: grid.color.opacity(isSelected ? 0.3 : (isHovered ? 0.15 : 0)),
+                    radius: isSelected ? 8 : (isHovered ? 4 : 0),
+                    x: 0,
+                    y: isSelected ? 2 : (isHovered ? 1 : 0)
+                )
+                .animation(.easeInOut(duration: 0.2), value: isSelected)
+                .animation(.easeInOut(duration: 0.15), value: isHovered)
             
-            // Grid lines
+            // Grid lines with enhanced visuals
             ModernGridLinesView(
                 frame: displayFrame,
                 grid: grid,
                 scale: scale
             )
+            .opacity(isSelected ? 1.0 : (isHovered ? 0.8 : 0.6))
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
+            .animation(.easeInOut(duration: 0.15), value: isHovered)
             
-            // Floating control tag (top-right corner)
+            // Floating control tag (top-right corner) with slide-in animation
             if showTags && (isSelected || isHovered) {
                 FloatingGridControlView(
                     grid: grid,
@@ -71,22 +89,37 @@ struct ModernGridOverlayView: View {
                     x: displayFrame.maxX - 8,
                     y: displayFrame.minY + 8
                 )
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .trailing).combined(with: .opacity)
+                ))
+                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isSelected)
+                .animation(.spring(response: 0.3, dampingFraction: 0.9), value: isHovered)
             }
             
-            // Resize handles (only when selected)
+            // Resize handles (only when selected) with fade-in animation
             if isSelected {
                 ModernResizeHandlesView(
                     frame: displayFrame,
-                    onHandleDrag: handleResize
+                    onHandleDrag: handleResize,
+                    onHandleDragEnd: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isResizing = false
+                        }
+                    }
                 )
+                .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isSelected)
             }
         }
         .gesture(
             DragGesture()
                 .onChanged { value in
                     if !isResizing {
-                        isDragging = true
-                        dragOffset = value.translation
+                        withAnimation(.interactiveSpring(response: 0.2, dampingFraction: 0.9)) {
+                            isDragging = true
+                            dragOffset = value.translation
+                        }
                     }
                 }
                 .onEnded { value in
@@ -94,10 +127,13 @@ struct ModernGridOverlayView: View {
                         var updatedGrid = grid
                         updatedGrid.frame.origin.x += value.translation.width / scale
                         updatedGrid.frame.origin.y += value.translation.height / scale
-                        onGridChanged(updatedGrid)
                         
-                        dragOffset = .zero
-                        isDragging = false
+                        // Apply smooth elastic animation for position updates
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.1)) {
+                            onGridChanged(updatedGrid)
+                            dragOffset = .zero
+                            isDragging = false
+                        }
                     }
                 }
         )
@@ -154,6 +190,8 @@ struct ModernGridOverlayView: View {
         
         var updatedGrid = grid
         updatedGrid.frame = newFrame
+        
+        // Update immediately without animation for real-time feedback
         onGridChanged(updatedGrid)
     }
 }
@@ -202,27 +240,27 @@ struct ModernGridLinesView: View {
     
     var body: some View {
         ZStack {
-            // Vertical lines
+            // Vertical lines - Use visualThickness for display
             ForEach(1..<grid.columns, id: \.self) { col in
                 let x = frame.minX + (frame.width / Double(grid.columns)) * Double(col)
                 Path { path in
                     path.move(to: CGPoint(x: x, y: frame.minY))
                     path.addLine(to: CGPoint(x: x, y: frame.maxY))
                 }
-                .stroke(grid.color.opacity(0.7), lineWidth: 1)
+                .stroke(grid.color.opacity(0.7), lineWidth: grid.visualThickness)
             }
             
-            // Horizontal lines
+            // Horizontal lines - Use visualThickness for display
             ForEach(1..<grid.rows, id: \.self) { row in
                 let y = frame.minY + (frame.height / Double(grid.rows)) * Double(row)
                 Path { path in
                     path.move(to: CGPoint(x: frame.minX, y: y))
                     path.addLine(to: CGPoint(x: frame.maxX, y: y))
                 }
-                .stroke(grid.color.opacity(0.7), lineWidth: 1)
+                .stroke(grid.color.opacity(0.7), lineWidth: grid.visualThickness)
             }
             
-            // Thickness indicators (if thickness > 0)
+            // Logical thickness indicators (show areas that will be excluded from slicing)
             if grid.thickness > 0 {
                 ForEach(0..<grid.rows, id: \.self) { row in
                     ForEach(0..<grid.columns, id: \.self) { col in
@@ -230,17 +268,37 @@ struct ModernGridLinesView: View {
                         let cellY = frame.minY + (frame.height / Double(grid.rows)) * Double(row)
                         let cellWidth = frame.width / Double(grid.columns)
                         let cellHeight = frame.height / Double(grid.rows)
-                        let thickness = grid.thickness * scale
+                        let logicalThickness = grid.thickness * scale
                         
+                        // Show the actual cutting area (what will be exported)
                         Rectangle()
-                            .stroke(Color.red.opacity(0.6), lineWidth: 1)
+                            .stroke(Color.green.opacity(0.8), lineWidth: 1)
                             .frame(
-                                width: cellWidth - thickness * 2,
-                                height: cellHeight - thickness * 2
+                                width: cellWidth - logicalThickness * 2,
+                                height: cellHeight - logicalThickness * 2
                             )
                             .position(
                                 x: cellX + cellWidth / 2,
                                 y: cellY + cellHeight / 2
+                            )
+                            .overlay(
+                                // Show excluded areas in red
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.1))
+                                    .frame(width: cellWidth, height: cellHeight)
+                                    .position(x: cellX + cellWidth / 2, y: cellY + cellHeight / 2)
+                                    .mask(
+                                        Rectangle()
+                                            .frame(width: cellWidth, height: cellHeight)
+                                            .overlay(
+                                                Rectangle()
+                                                    .frame(
+                                                        width: cellWidth - logicalThickness * 2,
+                                                        height: cellHeight - logicalThickness * 2
+                                                    )
+                                                    .blendMode(.destinationOut)
+                                            )
+                                    )
                             )
                     }
                 }
@@ -252,35 +310,36 @@ struct ModernGridLinesView: View {
 struct ModernResizeHandlesView: View {
     let frame: CGRect
     let onHandleDrag: (ModernGridOverlayView.ResizeHandle, CGSize) -> Void
+    let onHandleDragEnd: () -> Void
     
     private let handleSize: CGFloat = 8
     
     var body: some View {
         ZStack {
             // Corner handles
-            ModernResizeHandle(handle: .topLeft, onDrag: onHandleDrag)
+            ModernResizeHandle(handle: .topLeft, onDrag: onHandleDrag, onDragEnd: onHandleDragEnd)
                 .position(x: frame.minX, y: frame.minY)
             
-            ModernResizeHandle(handle: .topRight, onDrag: onHandleDrag)
+            ModernResizeHandle(handle: .topRight, onDrag: onHandleDrag, onDragEnd: onHandleDragEnd)
                 .position(x: frame.maxX, y: frame.minY)
             
-            ModernResizeHandle(handle: .bottomLeft, onDrag: onHandleDrag)
+            ModernResizeHandle(handle: .bottomLeft, onDrag: onHandleDrag, onDragEnd: onHandleDragEnd)
                 .position(x: frame.minX, y: frame.maxY)
             
-            ModernResizeHandle(handle: .bottomRight, onDrag: onHandleDrag)
+            ModernResizeHandle(handle: .bottomRight, onDrag: onHandleDrag, onDragEnd: onHandleDragEnd)
                 .position(x: frame.maxX, y: frame.maxY)
             
             // Edge handles
-            ModernResizeHandle(handle: .top, onDrag: onHandleDrag)
+            ModernResizeHandle(handle: .top, onDrag: onHandleDrag, onDragEnd: onHandleDragEnd)
                 .position(x: frame.midX, y: frame.minY)
             
-            ModernResizeHandle(handle: .bottom, onDrag: onHandleDrag)
+            ModernResizeHandle(handle: .bottom, onDrag: onHandleDrag, onDragEnd: onHandleDragEnd)
                 .position(x: frame.midX, y: frame.maxY)
             
-            ModernResizeHandle(handle: .left, onDrag: onHandleDrag)
+            ModernResizeHandle(handle: .left, onDrag: onHandleDrag, onDragEnd: onHandleDragEnd)
                 .position(x: frame.minX, y: frame.midY)
             
-            ModernResizeHandle(handle: .right, onDrag: onHandleDrag)
+            ModernResizeHandle(handle: .right, onDrag: onHandleDrag, onDragEnd: onHandleDragEnd)
                 .position(x: frame.maxX, y: frame.midY)
         }
     }
@@ -289,6 +348,7 @@ struct ModernResizeHandlesView: View {
 struct ModernResizeHandle: View {
     let handle: ModernGridOverlayView.ResizeHandle
     let onDrag: (ModernGridOverlayView.ResizeHandle, CGSize) -> Void
+    let onDragEnd: () -> Void
     
     private let handleSize: CGFloat = 10
     
@@ -305,6 +365,9 @@ struct ModernResizeHandle: View {
                 DragGesture()
                     .onChanged { value in
                         onDrag(handle, value.translation)
+                    }
+                    .onEnded { _ in
+                        onDragEnd()
                     }
             )
     }

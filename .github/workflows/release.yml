@@ -1,0 +1,96 @@
+name: Build and Release Moji Slicer
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (e.g., v1.0.0)"
+        required: true
+        default: "v1.0.0"
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build Release
+        run: |
+          # Set version from tag or manual input
+          if [ "${{ github.event_name }}" = "push" ]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+
+          echo "Building version: $VERSION"
+
+          # Create build directory
+          mkdir -p releases
+
+          # Build for release
+          xcodebuild \
+            -project "Moji Slicer.xcodeproj" \
+            -scheme "Moji Slicer" \
+            -configuration Release \
+            -derivedDataPath ./releases/DerivedData \
+            -archivePath "./releases/Moji Slicer.xcarchive" \
+            archive
+            
+          # Export app
+          xcodebuild \
+            -exportArchive \
+            -archivePath "./releases/Moji Slicer.xcarchive" \
+            -exportPath ./releases \
+            -exportOptionsPlist ./scripts/ExportOptions.plist
+            
+          # Create ZIP for distribution
+          cd releases
+          zip -r "Moji-Slicer-${VERSION}.zip" "Moji Slicer.app"
+
+          # Create DMG (optional)
+          hdiutil create -volname "Moji Slicer" -srcfolder "Moji Slicer.app" -ov -format UDZO "Moji-Slicer-${VERSION}.dmg"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version || github.ref_name }}
+          name: Moji Slicer ${{ github.event.inputs.version || github.ref_name }}
+          body: |
+            ## 🎉 Moji Slicer ${{ github.event.inputs.version || github.ref_name }}
+
+            ### 🚀 What's New
+            - Modern SwiftUI interface with grey/white theme
+            - Merged Select & Move tools for streamlined workflow
+            - Repositioned zoom controls to bottom-left
+            - Icon-only buttons with hover tooltips
+            - Enhanced grid slicing capabilities
+
+            ### 📥 Installation
+            1. Download the `.zip` file below
+            2. Unzip and drag `Moji Slicer.app` to `/Applications`
+            3. Launch the app and start slicing!
+
+            ### 💾 Download Options
+            - **ZIP**: Recommended for most users
+            - **DMG**: Disk image installer
+
+            > **Note**: This app requires macOS 15.0 or later
+
+          files: |
+            releases/Moji-Slicer-*.zip
+            releases/Moji-Slicer-*.dmg
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

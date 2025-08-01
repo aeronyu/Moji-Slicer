@@ -1,0 +1,64 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata/
+
+# Build Products
+DerivedData/
+build/
+Build/
+*.app
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# User-specific files
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+
+# Swift Package Manager
+.swiftpm/
+Packages/
+Package.resolved
+
+# CocoaPods
+Pods/
+*.xcworkspace
+
+# Carthage
+Carthage/Build
+
+# Distribution
+releases/
+*.dmg
+*.pkg
+*.zip
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Archives
+*.tar.gz
+*.tgz
+*.tar.bz2
