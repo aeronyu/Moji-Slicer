@@ -298,12 +298,9 @@ code Models/UI/GridProperties.swift
 
 ### Known Issues Being Addressed
 
-- **Image Selection**: Implement individual image selection and manipulation controls
-- **Grid Duplication**: Add grid copy/paste functionality for workflow efficiency
-- **Batch Operations**: Implement batch grid creation and editing features
-- **Canvas Optimization**: Optimize rendering performance for large numbers of grids
 - **Deprecated API Warnings**: Fix `onChange` modifier warnings for macOS 14.0+ compatibility
 - **Sandbox Permissions**: Add proper sandboxed file write permissions for export functionality
+- **Performance Optimization**: Optimize rendering performance for large numbers of grids
 
 ---
 
