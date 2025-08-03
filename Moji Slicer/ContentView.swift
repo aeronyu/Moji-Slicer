@@ -622,7 +622,6 @@ struct ContentView: View {
         alert.addButton(withTitle: "OK")
         alert.runModal()
     }
-
 }
 
 // MARK: - Supporting Types
