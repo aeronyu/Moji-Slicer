@@ -16,21 +16,41 @@ struct GridCoordinateTransformer {
     ///   - canvasImage: The canvas image to slice
     /// - Returns: A new GridModel with coordinates transformed to image space
     static func transformGridToImageSpace(_ grid: GridModel, for canvasImage: CanvasImage) -> GridModel {
-        // Convert grid coordinates from canvas space to image space
-        let imageFrame = canvasImage.displayFrame
+        // Get the image's actual frame in canvas coordinates
+        // Canvas uses center-based coordinates, but image display uses position as top-left
+        let imageDisplayFrame = CGRect(
+            x: canvasImage.position.x - canvasImage.size.width * canvasImage.scale / 2,
+            y: canvasImage.position.y - canvasImage.size.height * canvasImage.scale / 2,
+            width: canvasImage.size.width * canvasImage.scale,
+            height: canvasImage.size.height * canvasImage.scale
+        )
         
-        // Calculate the intersection of grid and image
-        let intersection = grid.frame.intersection(imageFrame)
+        // Calculate the intersection of grid and image in canvas space
+        let intersection = grid.frame.intersection(imageDisplayFrame)
         
-        // Transform to image-relative coordinates
+        // If no intersection, return a zero-sized grid
+        if intersection.isEmpty {
+            return GridModel(
+                name: grid.name,
+                frame: CGRect.zero,
+                rows: grid.rows,
+                columns: grid.columns,
+                thickness: grid.thickness,
+                visualThickness: grid.visualThickness,
+                color: grid.color,
+                lineStyle: grid.lineStyle
+            )
+        }
+        
+        // Transform intersection to image-relative coordinates (top-left origin)
         let relativeFrame = CGRect(
-            x: intersection.minX - imageFrame.minX,
-            y: intersection.minY - imageFrame.minY,
+            x: intersection.minX - imageDisplayFrame.minX,
+            y: intersection.minY - imageDisplayFrame.minY,
             width: intersection.width,
             height: intersection.height
         )
         
-        // Scale to original image size (accounting for canvas scale)
+        // Scale to original image pixel coordinates
         let scaleFactor = 1.0 / canvasImage.scale
         let imageSpaceFrame = CGRect(
             x: relativeFrame.minX * scaleFactor,
@@ -39,10 +59,18 @@ struct GridCoordinateTransformer {
             height: relativeFrame.height * scaleFactor
         )
         
+        // Ensure the frame is within image bounds
+        let clampedFrame = CGRect(
+            x: max(0, imageSpaceFrame.minX),
+            y: max(0, imageSpaceFrame.minY),
+            width: min(imageSpaceFrame.width, canvasImage.size.width - max(0, imageSpaceFrame.minX)),
+            height: min(imageSpaceFrame.height, canvasImage.size.height - max(0, imageSpaceFrame.minY))
+        )
+        
         // Create new grid with transformed coordinates
         return GridModel(
             name: grid.name,
-            frame: imageSpaceFrame,
+            frame: clampedFrame,
             rows: grid.rows,
             columns: grid.columns,
             thickness: grid.thickness,
@@ -58,8 +86,13 @@ struct GridCoordinateTransformer {
     ///   - canvasImage: The canvas image to check intersection with
     /// - Returns: True if the grid can be sliced from the image
     static func gridIntersectsImage(_ grid: GridModel, _ canvasImage: CanvasImage) -> Bool {
-        let imageFrame = canvasImage.displayFrame
-        return grid.frame.intersects(imageFrame)
+        let imageDisplayFrame = CGRect(
+            x: canvasImage.position.x - canvasImage.size.width * canvasImage.scale / 2,
+            y: canvasImage.position.y - canvasImage.size.height * canvasImage.scale / 2,
+            width: canvasImage.size.width * canvasImage.scale,
+            height: canvasImage.size.height * canvasImage.scale
+        )
+        return grid.frame.intersects(imageDisplayFrame)
     }
     
     /// Calculate the effective slicing area for a grid-image pair
@@ -68,8 +101,13 @@ struct GridCoordinateTransformer {
     ///   - canvasImage: The canvas image
     /// - Returns: The intersection rectangle in canvas coordinates, or nil if no intersection
     static func slicingArea(for grid: GridModel, on canvasImage: CanvasImage) -> CGRect? {
-        let imageFrame = canvasImage.displayFrame
-        let intersection = grid.frame.intersection(imageFrame)
+        let imageDisplayFrame = CGRect(
+            x: canvasImage.position.x - canvasImage.size.width * canvasImage.scale / 2,
+            y: canvasImage.position.y - canvasImage.size.height * canvasImage.scale / 2,
+            width: canvasImage.size.width * canvasImage.scale,
+            height: canvasImage.size.height * canvasImage.scale
+        )
+        let intersection = grid.frame.intersection(imageDisplayFrame)
         return intersection.isEmpty ? nil : intersection
     }
 }

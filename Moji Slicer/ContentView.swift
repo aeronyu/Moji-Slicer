@@ -21,6 +21,7 @@ struct ContentView: View {
     @State private var showGridTags = true
     @State private var selectedGridID: UUID?
     @State private var showingAllBoards = true  // Show All Boards view by default
+    @State private var showingGridSettings = false
     
     var body: some View {
         if showingAllBoards {
@@ -85,6 +86,9 @@ struct ContentView: View {
             if projects.isEmpty {
                 createSampleProjects()
             }
+        }
+        .sheet(isPresented: $showingGridSettings) {
+            GridSettingsSheet(gridProperties: gridProperties)
         }
     }
     
@@ -167,59 +171,40 @@ struct ContentView: View {
         Group {
             if selectedTool == .grid {
                 HStack(spacing: 8) {
-                    // Grid type picker
-                    Picker("Grid Type", selection: $gridProperties.gridType) {
-                        ForEach(GridType.allCases, id: \.self) { type in
-                            Label(type.rawValue, systemImage: type.icon).tag(type)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 100)
-                    
-                    // Grid size
-                    if gridProperties.gridType == .square {
-                        HStack(spacing: 4) {
-                            TextField("3", value: $gridProperties.squareSize, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 35)
-                            Text("×\(gridProperties.squareSize)")
+                    // Simplified grid type and size
+                    HStack(spacing: 4) {
+                        if gridProperties.gridType == .square {
+                            Text("\(gridProperties.squareSize)×\(gridProperties.squareSize)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("\(gridProperties.columns)×\(gridProperties.rows)")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                    } else {
-                        HStack(spacing: 2) {
-                            TextField("3", value: $gridProperties.columns, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 35)
-                            Text("×")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            TextField("3", value: $gridProperties.rows, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 35)
-                        }
+                        
+                        // Color indicator
+                        Circle()
+                            .fill(gridProperties.color)
+                            .frame(width: 16, height: 16)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                            )
                     }
                     
-                    // Color picker
-                    ColorPicker("", selection: $gridProperties.color)
-                        .labelsHidden()
-                        .frame(width: 28, height: 28)
-                    
-                    // Thickness controls (logical thickness for slicing)
-                    VStack(spacing: 2) {
-                        HStack(spacing: 4) {
-                            Text("Gap:")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                            TextField("0", value: $gridProperties.thickness, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 35)
-                                .help("Logical thickness: pixels to exclude between cells during slicing")
-                        }
-                        Text("\(Int(gridProperties.thickness))px")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
+                    // Settings button to open detailed popup
+                    Button {
+                        showingGridSettings = true
+                    } label: {
+                        Image(systemName: "gear")
+                            .font(.system(size: 14))
+                            .foregroundColor(.primary)
+                            .frame(width: 28, height: 28)
+                            .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
                     }
+                    .buttonStyle(.plain)
+                    .help("Grid Settings")
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)

@@ -59,6 +59,14 @@ struct AllBoardsView: View {
         return projects
     }
     
+    private var hasProjectsWithoutContent: Bool {
+        !currentProjects.isEmpty && allProjectsEmptyOfImages
+    }
+    
+    private var allProjectsEmptyOfImages: Bool {
+        currentProjects.allSatisfy { $0.images.isEmpty }
+    }
+    
     var body: some View {
         HStack(spacing: 0) {
             // Left Sidebar
@@ -140,27 +148,105 @@ struct AllBoardsView: View {
                 .padding(.top, 20)
                 .padding(.bottom, 30)
                 
-                // Boards Grid
+                // Boards Grid or Empty State
                 ScrollView {
-                    LazyVGrid(columns: [
-                        GridItem(.adaptive(minimum: 220, maximum: 280), spacing: 20)
-                    ], spacing: 20) {
-                        ForEach(currentProjects) { project in
-                            BoardThumbnailView(
-                                project: project,
-                                onSelect: {
-                                    onSelectProject(project)
-                                }
-                            )
+                    if currentProjects.isEmpty {
+                        // Empty state when no projects
+                        VStack(spacing: 20) {
+                            Spacer()
+                            
+                            Image(systemName: "square.grid.2x2")
+                                .font(.system(size: 60))
+                                .foregroundColor(.white.opacity(0.3))
+                            
+                            Text("No Projects Yet")
+                                .font(.title2)
+                                .fontWeight(.medium)
+                                .foregroundColor(.white.opacity(0.7))
+                            
+                            Text("Create your first project to start slicing images")
+                                .font(.body)
+                                .foregroundColor(.white.opacity(0.5))
+                                .multilineTextAlignment(.center)
+                            
+                            Button {
+                                createNewBoard()
+                            } label: {
+                                Text("Create New Project")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 12)
+                                    .background(Color.blue)
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                            
+                            Spacer()
                         }
+                        .frame(maxWidth: .infinity)
+                    } else if hasProjectsWithoutContent {
+                        // Show projects but also show "nothing to slice" hint
+                        LazyVGrid(columns: [
+                            GridItem(.adaptive(minimum: 220, maximum: 280), spacing: 20)
+                        ], spacing: 20) {
+                            ForEach(currentProjects) { project in
+                                BoardThumbnailView(
+                                    project: project,
+                                    onSelect: {
+                                        onSelectProject(project)
+                                    }
+                                )
+                            }
+                            
+                            // Add New Board Card
+                            NewBoardCard {
+                                createNewBoard()
+                            }
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 20)
                         
-                        // Add New Board Card
-                        NewBoardCard {
-                            createNewBoard()
+                        // Nothing to slice hint
+                        if allProjectsEmptyOfImages {
+                            VStack(spacing: 12) {
+                                Image(systemName: "photo.badge.plus")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.orange.opacity(0.6))
+                                
+                                Text("Nothing to Slice Yet")
+                                    .font(.headline)
+                                    .foregroundColor(.white.opacity(0.7))
+                                
+                                Text("Your projects don't have any images yet. Import some images to start slicing!")
+                                    .font(.body)
+                                    .foregroundColor(.white.opacity(0.5))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 60)
+                            }
+                            .padding(.bottom, 40)
                         }
+                    } else {
+                        LazyVGrid(columns: [
+                            GridItem(.adaptive(minimum: 220, maximum: 280), spacing: 20)
+                        ], spacing: 20) {
+                            ForEach(currentProjects) { project in
+                                BoardThumbnailView(
+                                    project: project,
+                                    onSelect: {
+                                        onSelectProject(project)
+                                    }
+                                )
+                            }
+                            
+                            // Add New Board Card
+                            NewBoardCard {
+                                createNewBoard()
+                            }
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 40)
                     }
-                    .padding(.horizontal, 40)
-                    .padding(.bottom, 40)
                 }
                 
                 Spacer()

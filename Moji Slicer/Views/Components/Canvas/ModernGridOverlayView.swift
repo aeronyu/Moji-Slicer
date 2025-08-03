@@ -18,6 +18,8 @@ struct ModernGridOverlayView: View {
     let onGridChanged: (GridModel) -> Void
     let onGridSelected: () -> Void
     let onGridSlice: () -> Void
+    let onGridDelete: () -> Void
+    let onGridRename: (String) -> Void
     
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging = false
@@ -140,6 +142,14 @@ struct ModernGridOverlayView: View {
         .onTapGesture {
             onGridSelected()
         }
+        .contextMenu {
+            GridContextMenu(
+                grid: grid,
+                onSlice: onGridSlice,
+                onDelete: onGridDelete,
+                onRename: onGridRename
+            )
+        }
     }
     
     private func handleResize(_ handle: ResizeHandle, translation: CGSize) {
@@ -155,44 +165,58 @@ struct ModernGridOverlayView: View {
             height: translation.height / scale
         )
         
+        // Apply magnetic snapping (snap to grid increments of 10 pixels)
+        let snapSize: Double = 10
+        let snappedTranslation = CGSize(
+            width: round(scaledTranslation.width / snapSize) * snapSize,
+            height: round(scaledTranslation.height / snapSize) * snapSize
+        )
+        
         switch handle {
         case .topLeft:
-            newFrame.origin.x += scaledTranslation.width
-            newFrame.origin.y += scaledTranslation.height
-            newFrame.size.width -= scaledTranslation.width
-            newFrame.size.height -= scaledTranslation.height
+            newFrame.origin.x += snappedTranslation.width
+            newFrame.origin.y += snappedTranslation.height
+            newFrame.size.width -= snappedTranslation.width
+            newFrame.size.height -= snappedTranslation.height
         case .topRight:
-            newFrame.origin.y += scaledTranslation.height
-            newFrame.size.width += scaledTranslation.width
-            newFrame.size.height -= scaledTranslation.height
+            newFrame.origin.y += snappedTranslation.height
+            newFrame.size.width += snappedTranslation.width
+            newFrame.size.height -= snappedTranslation.height
         case .bottomLeft:
-            newFrame.origin.x += scaledTranslation.width
-            newFrame.size.width -= scaledTranslation.width
-            newFrame.size.height += scaledTranslation.height
+            newFrame.origin.x += snappedTranslation.width
+            newFrame.size.width -= snappedTranslation.width
+            newFrame.size.height += snappedTranslation.height
         case .bottomRight:
-            newFrame.size.width += scaledTranslation.width
-            newFrame.size.height += scaledTranslation.height
+            newFrame.size.width += snappedTranslation.width
+            newFrame.size.height += snappedTranslation.height
         case .top:
-            newFrame.origin.y += scaledTranslation.height
-            newFrame.size.height -= scaledTranslation.height
+            newFrame.origin.y += snappedTranslation.height
+            newFrame.size.height -= snappedTranslation.height
         case .bottom:
-            newFrame.size.height += scaledTranslation.height
+            newFrame.size.height += snappedTranslation.height
         case .left:
-            newFrame.origin.x += scaledTranslation.width
-            newFrame.size.width -= scaledTranslation.width
+            newFrame.origin.x += snappedTranslation.width
+            newFrame.size.width -= snappedTranslation.width
         case .right:
-            newFrame.size.width += scaledTranslation.width
+            newFrame.size.width += snappedTranslation.width
         }
         
-        // Ensure minimum size
-        newFrame.size.width = max(50, newFrame.size.width)
-        newFrame.size.height = max(50, newFrame.size.height)
+        // Ensure minimum size with snapping
+        newFrame.size.width = max(50, round(newFrame.size.width / snapSize) * snapSize)
+        newFrame.size.height = max(50, round(newFrame.size.height / snapSize) * snapSize)
         
-        var updatedGrid = grid
-        updatedGrid.frame = newFrame
-        
-        // Update immediately without animation for real-time feedback
-        onGridChanged(updatedGrid)
+        // Throttle updates to reduce jitter (only update every 16ms for 60fps)
+        let now = Date()
+        if now.timeIntervalSince(lastUpdateTime) >= 0.016 {
+            var updatedGrid = grid
+            updatedGrid.frame = newFrame
+            
+            // Use smooth animation for updates
+            withAnimation(.interactiveSpring(response: 0.1, dampingFraction: 1.0)) {
+                onGridChanged(updatedGrid)
+            }
+            lastUpdateTime = now
+        }
     }
 }
 
@@ -370,5 +394,44 @@ struct ModernResizeHandle: View {
                         onDragEnd()
                     }
             )
+    }
+}
+
+struct GridContextMenu: View {
+    let grid: GridModel
+    let onSlice: () -> Void
+    let onDelete: () -> Void
+    let onRename: (String) -> Void
+    
+    @State private var showingRename = false
+    @State private var newName = ""
+    
+    var body: some View {
+        VStack {
+            Button("Slice Grid") {
+                onSlice()
+            }
+            
+            Divider()
+            
+            Button("Rename Grid...") {
+                newName = grid.name
+                showingRename = true
+            }
+            
+            Button("Delete Grid") {
+                onDelete()
+            }
+            .foregroundColor(.red)
+        }
+        .alert("Rename Grid", isPresented: $showingRename) {
+            TextField("Grid Name", text: $newName)
+            Button("Cancel", role: .cancel) { }
+            Button("Rename") {
+                onRename(newName)
+            }
+        } message: {
+            Text("Enter a new name for this grid")
+        }
     }
 }

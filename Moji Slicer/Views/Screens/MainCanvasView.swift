@@ -205,10 +205,19 @@ struct MainCanvasView: View {
                 DragGesture()
                     .onChanged { value in
                         if selectedTool == .select {
-                            // Move image logic here
+                            // Move image logic here - implement image dragging
+                            moveImage(canvasImage, by: value.translation)
                         }
                     }
             )
+            .contextMenu {
+                ImageContextMenu(
+                    image: canvasImage,
+                    onDelete: {
+                        deleteImage(canvasImage)
+                    }
+                )
+            }
             .onAppear {
                 print("✅ Rendering image: \(canvasImage.imageName)")
                 print("   Position: \(canvasImage.position)")
@@ -275,6 +284,12 @@ struct MainCanvasView: View {
                 },
                 onGridSlice: {
                     sliceGrid(grid)
+                },
+                onGridDelete: {
+                    deleteGrid(grid)
+                },
+                onGridRename: { newName in
+                    renameGrid(grid, to: newName)
                 }
             )
             .onHover { isHovered in
@@ -468,6 +483,72 @@ struct MainCanvasView: View {
         } else {
             print("❌ Grid too small: width=\(width), height=\(height) (minimum 50x50)")
         }
+    }
+    
+    private func moveImage(_ image: CanvasImage, by translation: CGSize) {
+        guard let index = images.firstIndex(where: { $0.id == image.id }) else {
+            return
+        }
+        
+        var updatedImage = image
+        updatedImage.position.x += translation.width / scale
+        updatedImage.position.y += translation.height / scale
+        
+        images[index] = updatedImage
+    }
+    
+    private func deleteImage(_ image: CanvasImage) {
+        guard let index = images.firstIndex(where: { $0.id == image.id }) else {
+            return
+        }
+        
+        // Record undo action
+        undoManager.recordAction(.removeImage(image, at: index))
+        
+        // Remove the image with animation
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            images.remove(at: index)
+        }
+        
+        print("🗑️ Deleted image: \(image.imageName)")
+    }
+    
+    private func deleteGrid(_ grid: GridModel) {
+        guard let index = grids.firstIndex(where: { $0.id == grid.id }) else {
+            return
+        }
+        
+        // Record undo action
+        undoManager.recordAction(.removeGrid(grid, at: index))
+        
+        // Remove the grid with animation
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            grids.remove(at: index)
+            
+            // Clear selection if this was the selected grid
+            if selectedGridID == grid.id {
+                selectedGridID = nil
+                hoveredGridID = nil
+            }
+        }
+        
+        print("🗑️ Deleted grid: \(grid.name)")
+    }
+    
+    private func renameGrid(_ grid: GridModel, to newName: String) {
+        guard let index = grids.firstIndex(where: { $0.id == grid.id }) else {
+            return
+        }
+        
+        let oldGrid = grids[index]
+        var updatedGrid = oldGrid
+        updatedGrid.name = newName.isEmpty ? "Grid \(index + 1)" : newName
+        
+        // Record undo action for rename
+        undoManager.recordAction(.modifyGrid(old: oldGrid, new: updatedGrid, at: index))
+        
+        grids[index] = updatedGrid
+        print("✏️ Renamed grid from '\(oldGrid.name)' to '\(updatedGrid.name)'")
     }
     
     private func deleteSelectedGrid() {
@@ -687,6 +768,20 @@ struct GridLinesPreview: View {
             return StrokeStyle(lineWidth: 1, dash: [5, 3])
         case .dotted:
             return StrokeStyle(lineWidth: 1, dash: [2, 2])
+        }
+    }
+}
+
+struct ImageContextMenu: View {
+    let image: CanvasImage
+    let onDelete: () -> Void
+    
+    var body: some View {
+        VStack {
+            Button("Delete Image") {
+                onDelete()
+            }
+            .foregroundColor(.red)
         }
     }
 }
