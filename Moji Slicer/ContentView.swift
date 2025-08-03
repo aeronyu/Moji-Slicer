@@ -204,6 +204,22 @@ struct ContentView: View {
                     ColorPicker("", selection: $gridProperties.color)
                         .labelsHidden()
                         .frame(width: 28, height: 28)
+                    
+                    // Thickness controls (logical thickness for slicing)
+                    VStack(spacing: 2) {
+                        HStack(spacing: 4) {
+                            Text("Gap:")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            TextField("0", value: $gridProperties.thickness, format: .number)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 35)
+                                .help("Logical thickness: pixels to exclude between cells during slicing")
+                        }
+                        Text("\(Int(gridProperties.thickness))px")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -507,7 +523,7 @@ struct ContentView: View {
                     }
                     
                     // Transform grid coordinates to image coordinates
-                    let transformedGrid = transformGridToImageSpace(grid, for: canvasImage)
+                    let transformedGrid = GridCoordinateTransformer.transformGridToImageSpace(grid, for: canvasImage)
                     
                     // Create subdirectory for this image
                     let imageOutputURL = gridOutputURL.appendingPathComponent("Image_\(imageIndex + 1)_\(canvasImage.imageName)")
@@ -531,45 +547,6 @@ struct ContentView: View {
             print("❌ Error slicing grids: \(error.localizedDescription)")
             showSlicingAlert(title: "Slicing Failed", message: error.localizedDescription)
         }
-    }
-    
-    // MARK: - Coordinate Transformation Helper
-    
-    private func transformGridToImageSpace(_ grid: GridModel, for canvasImage: CanvasImage) -> GridModel {
-        // Convert grid coordinates from canvas space to image space
-        let imageFrame = canvasImage.displayFrame
-        
-        // Calculate the intersection of grid and image
-        let intersection = grid.frame.intersection(imageFrame)
-        
-        // Transform to image-relative coordinates
-        let relativeFrame = CGRect(
-            x: intersection.minX - imageFrame.minX,
-            y: intersection.minY - imageFrame.minY,
-            width: intersection.width,
-            height: intersection.height
-        )
-        
-        // Scale to original image size (accounting for canvas scale)
-        let scaleFactor = 1.0 / canvasImage.scale
-        let imageSpaceFrame = CGRect(
-            x: relativeFrame.minX * scaleFactor,
-            y: relativeFrame.minY * scaleFactor,
-            width: relativeFrame.width * scaleFactor,
-            height: relativeFrame.height * scaleFactor
-        )
-        
-        // Create new grid with transformed coordinates
-        return GridModel(
-            name: grid.name,
-            frame: imageSpaceFrame,
-            rows: grid.rows,
-            columns: grid.columns,
-            thickness: grid.thickness,
-            visualThickness: grid.visualThickness,
-            color: grid.color,
-            lineStyle: grid.lineStyle
-        )
     }
     
     // MARK: - User Feedback
