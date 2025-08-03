@@ -93,33 +93,48 @@ struct ContentView: View {
     }
     
     private var topToolbar: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             backButton
+            
+            Divider()
+                .frame(height: 24)
+            
             projectNameField
+            
+            Spacer()
+            
             toolSelection
             gridPropertiesSection
+            
             Spacer()
+            
             actionButtons
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(.regularMaterial)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 0))
+        .overlay(
+            Rectangle()
+                .frame(height: 1)
+                .foregroundColor(.separator.opacity(0.5))
+                .frame(maxHeight: .infinity, alignment: .bottom)
+        )
     }
     
     private var backButton: some View {
-                // Back button (simplified without text)
-                Button {
-                    showingAllBoards = true
-                    selectedProject = nil
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.primary)
-                        .frame(width: 28, height: 28)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-                }
-                .buttonStyle(.plain)
-                .help("Back to All Boards")
+        Button {
+            showingAllBoards = true
+            selectedProject = nil
+        } label: {
+            Image(systemName: "chevron.left")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.primary)
+                .frame(width: 32, height: 32)
+                .background(.quaternary, in: RoundedRectangle(cornerRadius: 6))
+                .contentShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
+        .help("Back to All Boards")
     }
     
     private var projectNameField: some View {
@@ -136,21 +151,29 @@ struct ContentView: View {
                     }
                 ))
                 .textFieldStyle(.plain)
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.primary)
                 .frame(maxWidth: 200)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 6))
             }
         }
     }
     
     private var toolSelection: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 2) {
             toolButton(.select)
             toolButton(.grid)
             toolButton(.label)
         }
-        .padding(.horizontal, 4)
+        .padding(.horizontal, 2)
         .padding(.vertical, 2)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
+        .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.separator.opacity(0.3), lineWidth: 1)
+        )
     }
     
     private func toolButton(_ tool: CanvasTool) -> some View {
@@ -158,38 +181,44 @@ struct ContentView: View {
             selectedTool = tool
         } label: {
             Image(systemName: tool.icon)
-                .font(.system(size: 14))
+                .font(.system(size: 16, weight: .medium))
                 .foregroundColor(selectedTool == tool ? .white : .primary)
-                .frame(width: 28, height: 28)
-                .background(selectedTool == tool ? .primary : Color.clear, in: RoundedRectangle(cornerRadius: 4))
+                .frame(width: 32, height: 32)
+                .background(
+                    selectedTool == tool ? 
+                        .primary : Color.clear, 
+                    in: RoundedRectangle(cornerRadius: 6)
+                )
+                .contentShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
         .help(tool.rawValue)
+        .animation(.easeInOut(duration: 0.15), value: selectedTool)
     }
     
     private var gridPropertiesSection: some View {
         Group {
             if selectedTool == .grid {
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     // Simplified grid type and size
-                    HStack(spacing: 4) {
+                    HStack(spacing: 6) {
                         if gridProperties.gridType == .square {
                             Text("\(gridProperties.squareSize)×\(gridProperties.squareSize)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.primary)
                         } else {
                             Text("\(gridProperties.columns)×\(gridProperties.rows)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.primary)
                         }
                         
                         // Color indicator
                         Circle()
                             .fill(gridProperties.color)
-                            .frame(width: 16, height: 16)
+                            .frame(width: 18, height: 18)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.primary.opacity(0.2), lineWidth: 1)
+                                    .stroke(.quaternary, lineWidth: 2)
                             )
                     }
                     
@@ -198,17 +227,22 @@ struct ContentView: View {
                         showingGridSettings = true
                     } label: {
                         Image(systemName: "gear")
-                            .font(.system(size: 14))
+                            .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.primary)
-                            .frame(width: 28, height: 28)
-                            .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
+                            .frame(width: 32, height: 32)
+                            .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 6))
+                            .contentShape(RoundedRectangle(cornerRadius: 6))
                     }
                     .buttonStyle(.plain)
                     .help("Grid Settings")
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.separator.opacity(0.2), lineWidth: 1)
+                )
             }
         }
     }
@@ -220,10 +254,11 @@ struct ContentView: View {
                 showingImagePicker = true
             } label: {
                 Image(systemName: "photo.badge.plus")
-                    .font(.system(size: 14))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.primary)
-                    .frame(width: 28, height: 28)
-                    .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
+                    .frame(width: 36, height: 36)
+                    .background(.quaternary.opacity(0.6), in: RoundedRectangle(cornerRadius: 8))
+                    .contentShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
             .help("Import Images")
@@ -233,13 +268,19 @@ struct ContentView: View {
                 showGridTags.toggle()
             } label: {
                 Image(systemName: showGridTags ? "tag.fill" : "tag")
-                    .font(.system(size: 14))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundColor(showGridTags ? .white : .primary)
-                    .frame(width: 28, height: 28)
-                    .background(showGridTags ? .primary : Color.clear, in: RoundedRectangle(cornerRadius: 4))
+                    .frame(width: 36, height: 36)
+                    .background(
+                        showGridTags ? 
+                            .primary : .quaternary.opacity(0.6), 
+                        in: RoundedRectangle(cornerRadius: 8)
+                    )
+                    .contentShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
             .help("Toggle Grid Tags")
+            .animation(.easeInOut(duration: 0.15), value: showGridTags)
             
             // Slice all grids
             Button {
@@ -247,10 +288,11 @@ struct ContentView: View {
                 sliceAllGrids()
             } label: {
                 Image(systemName: "scissors")
-                    .font(.system(size: 14))
-                    .foregroundColor(.primary)
-                    .frame(width: 28, height: 28)
-                    .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white)
+                    .frame(width: 36, height: 36)
+                    .background(.red, in: RoundedRectangle(cornerRadius: 8))
+                    .contentShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
             .help("Slice All Grids")

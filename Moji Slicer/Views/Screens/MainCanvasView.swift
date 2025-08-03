@@ -56,66 +56,50 @@ struct MainCanvasView: View {
         .focusable()
         .onKeyPress(.delete) {
             print("🗑️ Delete key pressed")
-            print("   Grid count: \(grids.count)")
-            print("   Selected grid ID: \(selectedGridID?.uuidString ?? "none")")
             
-            // Print all grid selection states
-            for (index, grid) in grids.enumerated() {
-                print("   Grid \(index): \(grid.name) - isSelected: \(grid.isSelected), ID: \(grid.id.uuidString)")
-            }
-            
-            // Try multiple approaches to find selected grid
-            var selectedGridIndex: Int?
-            
-            // Method 1: Find by selectedGridID
-            if let selectedID = selectedGridID {
-                selectedGridIndex = grids.firstIndex { $0.id == selectedID }
-                print("📍 Method 1 (selectedGridID): Found index \(selectedGridIndex?.description ?? "none")")
-            }
-            
-            // Method 2: Find by isSelected flag
-            if selectedGridIndex == nil {
-                selectedGridIndex = grids.firstIndex { $0.isSelected }
-                print("📍 Method 2 (isSelected): Found index \(selectedGridIndex?.description ?? "none")")
-            }
-            
-            // Method 3: Use any visible/hovered grid as fallback
-            if selectedGridIndex == nil && hoveredGridID != nil {
-                selectedGridIndex = grids.firstIndex { $0.id == hoveredGridID }
-                print("📍 Method 3 (hoveredGridID): Found index \(selectedGridIndex?.description ?? "none")")
-            }
-            
-            if let index = selectedGridIndex {
-                let selectedGrid = grids[index]
-                print("✅ Deleting grid: \(selectedGrid.name) at index \(index)")
+            // Prioritized deletion logic:
+            // 1. Try to delete selected grid
+            if let selectedID = selectedGridID,
+               let gridIndex = grids.firstIndex(where: { $0.id == selectedID }) {
+                let selectedGrid = grids[gridIndex]
+                print("✅ Deleting selected grid: \(selectedGrid.name)")
                 
                 // Record undo action
-                undoManager.recordAction(.removeGrid(selectedGrid, at: index))
+                undoManager.recordAction(.removeGrid(selectedGrid, at: gridIndex))
                 
                 // Remove the grid with animation
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    grids.remove(at: index)
-                    
-                    // Clear selection
+                    grids.remove(at: gridIndex)
                     selectedGridID = nil
                     hoveredGridID = nil
                 }
                 
                 print("✅ Grid deleted successfully. Remaining count: \(grids.count)")
                 return .handled
-            } else {
-                print("❌ No selected grid found for deletion")
+            }
+            
+            // 2. Try to delete hovered grid as fallback
+            if let hoveredID = hoveredGridID,
+               let gridIndex = grids.firstIndex(where: { $0.id == hoveredID }) {
+                let hoveredGrid = grids[gridIndex]
+                print("✅ Deleting hovered grid: \(hoveredGrid.name)")
                 
-                // Debug: Force select the first grid if any exist
-                if !grids.isEmpty {
-                    print("🔧 Debug: Force selecting first grid")
-                    selectedGridID = grids[0].id
-                    grids[0].isSelected = true
-                    return .handled
+                // Record undo action
+                undoManager.recordAction(.removeGrid(hoveredGrid, at: gridIndex))
+                
+                // Remove the grid with animation
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    grids.remove(at: gridIndex)
+                    hoveredGridID = nil
                 }
                 
-                return .ignored
+                print("✅ Grid deleted successfully. Remaining count: \(grids.count)")
+                return .handled
             }
+            
+            // 3. If no grid is selected/hovered, ignore
+            print("❌ No grid selected or hovered for deletion")
+            return .ignored
         }
         .onKeyPress(.init("z")) {
             if NSEvent.modifierFlags.contains(.command) && NSEvent.modifierFlags.contains(.shift) {
@@ -188,7 +172,9 @@ struct MainCanvasView: View {
     }
     
     private func imageView(canvasImage: CanvasImage, nsImage: NSImage, geometry: GeometryProxy) -> some View {
-        Image(nsImage: nsImage)
+        let currentOffset = imageOffsets[canvasImage.id] ?? .zero
+        
+        return Image(nsImage: nsImage)
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(
@@ -197,16 +183,22 @@ struct MainCanvasView: View {
             )
             .position(
                 // Center-based coordinate system: (0,0) is at canvas center
-                x: geometry.size.width / 2 + (canvasImage.position.x * scale) + offset.width,
-                y: geometry.size.height / 2 + (canvasImage.position.y * scale) + offset.height
+                x: geometry.size.width / 2 + (canvasImage.position.x * scale) + offset.width + currentOffset.width,
+                y: geometry.size.height / 2 + (canvasImage.position.y * scale) + offset.height + currentOffset.height
             )
             .border(Color.green, width: 2) // Debug border to see image bounds
             .gesture(
                 DragGesture()
                     .onChanged { value in
                         if selectedTool == .select {
-                            // Move image logic here - implement image dragging
+                            // Move image with real-time feedback
                             moveImage(canvasImage, by: value.translation)
+                        }
+                    }
+                    .onEnded { value in
+                        if selectedTool == .select {
+                            // Finalize image position
+                            finalizeImageMove(canvasImage, by: value.translation)
                         }
                     }
             )
@@ -485,16 +477,31 @@ struct MainCanvasView: View {
         }
     }
     
+    @State private var imageOffsets: [UUID: CGSize] = [:]
+    
     private func moveImage(_ image: CanvasImage, by translation: CGSize) {
+        // Store temporary offset for real-time feedback
+        imageOffsets[image.id] = translation
+    }
+    
+    private func finalizeImageMove(_ image: CanvasImage, by translation: CGSize) {
         guard let index = images.firstIndex(where: { $0.id == image.id }) else {
             return
         }
         
+        let oldImage = images[index]
         var updatedImage = image
         updatedImage.position.x += translation.width / scale
         updatedImage.position.y += translation.height / scale
         
+        // Record undo action
+        undoManager.recordAction(.modifyImage(old: oldImage, new: updatedImage, at: index))
+        
+        // Apply the final position
         images[index] = updatedImage
+        
+        // Clear temporary offset
+        imageOffsets.removeValue(forKey: image.id)
     }
     
     private func deleteImage(_ image: CanvasImage) {
