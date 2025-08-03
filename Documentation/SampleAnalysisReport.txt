@@ -1,0 +1,81 @@
+🚀 Moji Slicer Code Quality Analyzer
+=====================================
+🔍 Analyzing Swift files in directory: ../Moji Slicer/Controllers
+
+📄 Analyzing: CodeQualityCLI.swift
+  ⚠️  Line 159: Potential retain cycle (missing weak/unowned self)
+     Code: self.issues = report.issues.map { IssueJSON(from: $0) }
+
+📄 Analyzing: CodeQualityAnalyzer.swift
+  💡 Line 174: Line too long (126 characters)
+     Suggestion: Break into multiple lines
+  ⚠️  Line 178: Force unwrapping detected
+     Code: // Instead of: someOptional!
+     Suggestion: Use optional binding or nil coalescing
+  ⚠️  Line 187: Potential retain cycle (missing weak/unowned self)
+     Code: if line.contains("self.") && (line.contains("{") || line.contains("closure")) {
+  💡 Line 265: Magic number detected
+     Code: if line.count > 120 {
+     Suggestion: Extract to named constant
+  💡 Line 270: Magic number detected
+     Code: description: "Lines should be shorter than 120 characters for better readability.",
+     Suggestion: Extract to named constant
+  💡 Line 295: Unresolved TODO/FIXME comment
+     Code: // TODO/FIXME comments
+  💡 Line 296: Unresolved TODO/FIXME comment
+     Code: if line.contains("TODO") || line.contains("FIXME") {
+  💡 Line 300: Unresolved TODO/FIXME comment
+     Code: title: "Unresolved TODO/FIXME",
+  💡 Line 301: Unresolved TODO/FIXME comment
+     Code: description: "TODO or FIXME comments indicate incomplete or problematic code.",
+  💡 Line 303: Unresolved TODO/FIXME comment
+     Code: suggestion: "Resolve the TODO/FIXME or create a proper issue",
+  ⚠️  Line 328: Force unwrapping detected
+     Code: } else if !line.trimmingCharacters(in: .whitespaces).isEmpty {
+     Suggestion: Use optional binding or nil coalescing
+  💡 Line 371: Magic number detected
+     Code: if classSize > 200 {
+     Suggestion: Extract to named constant
+  ⚠️  Line 384: Force unwrapping detected
+     Code: if !hasPrivateMembers && lines.count > 20 {
+     Suggestion: Use optional binding or nil coalescing
+  💡 Line 408: Line too long (124 characters)
+     Suggestion: Break into multiple lines
+  💡 Line 420: UI element missing accessibility label
+     Code: if (line.contains("NSImage(contentsOf:)") || line.contains("Data(contentsOf:)")) &&
+     Suggestion: Add .accessibilityLabel() modifier
+  💡 Line 535: UI element missing accessibility label
+     Code: Button("Save") { ... }
+     Suggestion: Add .accessibilityLabel() modifier
+  ⚠️  Line 577: Force unwrapping detected
+     Code: if !hasTests {
+     Suggestion: Use optional binding or nil coalescing
+  💡 Line 650: Line too long (124 characters)
+     Suggestion: Break into multiple lines
+  ⚠️  Line 651: Force unwrapping detected
+     Code: if !hasDocComment {
+     Suggestion: Use optional binding or nil coalescing
+  ⚠️  Line 798: Force unwrapping detected
+     Code: if !issueGroup.isEmpty {
+     Suggestion: Use optional binding or nil coalescing
+
+📄 Analyzing: SlicingEngine.swift
+  💡 Line 15: UI element missing accessibility label
+     Code: guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+     Suggestion: Add .accessibilityLabel() modifier
+  💡 Line 36: UI element missing accessibility label
+     Code: let croppedImage = NSImage(cgImage: croppedCGImage, size: cellFrame.size)
+     Suggestion: Add .accessibilityLabel() modifier
+  💡 Line 43: UI element missing accessibility label
+     Code: try saveImage(croppedImage, to: outputURL)
+     Suggestion: Add .accessibilityLabel() modifier
+  💡 Line 64: UI element missing accessibility label
+     Code: private static func saveImage(_ image: NSImage, to url: URL) throws {
+     Suggestion: Add .accessibilityLabel() modifier
+  💡 Line 77: Line too long (124 characters)
+     Suggestion: Break into multiple lines
+
+📊 Analysis Complete:
+   Files analyzed: 3
+   Issues found: 26
+⚠️  Found 26 potential issues. Review the detailed output above.

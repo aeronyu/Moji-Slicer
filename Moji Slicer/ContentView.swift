@@ -21,9 +21,12 @@ struct ContentView: View {
     @State private var showGridTags = true
     @State private var selectedGridID: UUID?
     @State private var showingAllBoards = true  // Show All Boards view by default
+    @State private var showingCodeQuality = false  // Code Quality Analyzer view
     
     var body: some View {
-        if showingAllBoards {
+        if showingCodeQuality {
+            codeQualityView
+        } else if showingAllBoards {
             allBoardsView
         } else {
             canvasView
@@ -38,6 +41,36 @@ struct ContentView: View {
                 showingAllBoards = false
             }
         )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private var codeQualityView: some View {
+        VStack(spacing: 0) {
+            // Top toolbar for code quality view
+            HStack {
+                Button {
+                    showingCodeQuality = false
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.primary)
+                        .frame(width: 28, height: 28)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                }
+                .buttonStyle(.plain)
+                .help("Back to Project")
+                
+                Text("Code Quality Analyzer")
+                    .font(.system(size: 14, weight: .medium))
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(.regularMaterial)
+            
+            CodeQualityView()
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
@@ -96,6 +129,7 @@ struct ContentView: View {
             gridPropertiesSection
             Spacer()
             actionButtons
+            codeQualityButton
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
@@ -204,6 +238,22 @@ struct ContentView: View {
                     ColorPicker("", selection: $gridProperties.color)
                         .labelsHidden()
                         .frame(width: 28, height: 28)
+                    
+                    // Thickness controls (logical thickness for slicing)
+                    VStack(spacing: 2) {
+                        HStack(spacing: 4) {
+                            Text("Gap:")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            TextField("0", value: $gridProperties.thickness, format: .number)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 35)
+                                .help("Logical thickness: pixels to exclude between cells during slicing")
+                        }
+                        Text("\(Int(gridProperties.thickness))px")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -253,6 +303,21 @@ struct ContentView: View {
             }
             .buttonStyle(.plain)
             .help("Slice All Grids")
+        }
+    }
+    
+    private var codeQualityButton: some View {
+        Button {
+            showingCodeQuality = true
+        } label: {
+            Image(systemName: "checkmark.seal")
+                .font(.system(size: 14))
+                .foregroundColor(.primary)
+                .frame(width: 28, height: 28)
+                .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
+        }
+        .buttonStyle(.plain)
+        .help("Code Quality Analyzer")
         }
     }
     
@@ -507,7 +572,7 @@ struct ContentView: View {
                     }
                     
                     // Transform grid coordinates to image coordinates
-                    let transformedGrid = transformGridToImageSpace(grid, for: canvasImage)
+                    let transformedGrid = GridCoordinateTransformer.transformGridToImageSpace(grid, for: canvasImage)
                     
                     // Create subdirectory for this image
                     let imageOutputURL = gridOutputURL.appendingPathComponent("Image_\(imageIndex + 1)_\(canvasImage.imageName)")
@@ -531,45 +596,6 @@ struct ContentView: View {
             print("❌ Error slicing grids: \(error.localizedDescription)")
             showSlicingAlert(title: "Slicing Failed", message: error.localizedDescription)
         }
-    }
-    
-    // MARK: - Coordinate Transformation Helper
-    
-    private func transformGridToImageSpace(_ grid: GridModel, for canvasImage: CanvasImage) -> GridModel {
-        // Convert grid coordinates from canvas space to image space
-        let imageFrame = canvasImage.displayFrame
-        
-        // Calculate the intersection of grid and image
-        let intersection = grid.frame.intersection(imageFrame)
-        
-        // Transform to image-relative coordinates
-        let relativeFrame = CGRect(
-            x: intersection.minX - imageFrame.minX,
-            y: intersection.minY - imageFrame.minY,
-            width: intersection.width,
-            height: intersection.height
-        )
-        
-        // Scale to original image size (accounting for canvas scale)
-        let scaleFactor = 1.0 / canvasImage.scale
-        let imageSpaceFrame = CGRect(
-            x: relativeFrame.minX * scaleFactor,
-            y: relativeFrame.minY * scaleFactor,
-            width: relativeFrame.width * scaleFactor,
-            height: relativeFrame.height * scaleFactor
-        )
-        
-        // Create new grid with transformed coordinates
-        return GridModel(
-            name: grid.name,
-            frame: imageSpaceFrame,
-            rows: grid.rows,
-            columns: grid.columns,
-            thickness: grid.thickness,
-            visualThickness: grid.visualThickness,
-            color: grid.color,
-            lineStyle: grid.lineStyle
-        )
     }
     
     // MARK: - User Feedback

@@ -531,7 +531,7 @@ struct MainCanvasView: View {
                 }
                 
                 // Transform grid coordinates to image coordinates
-                let transformedGrid = transformGridToImageSpace(grid, for: canvasImage)
+                let transformedGrid = GridCoordinateTransformer.transformGridToImageSpace(grid, for: canvasImage)
                 
                 let sliceURLs = try SlicingEngine.sliceGrid(transformedGrid, from: nsImage, outputDirectory: gridOutputURL)
                 totalSlices += sliceURLs.count
@@ -551,43 +551,6 @@ struct MainCanvasView: View {
     }
     
     // MARK: - Coordinate Transformation Helper
-    
-    private func transformGridToImageSpace(_ grid: GridModel, for canvasImage: CanvasImage) -> GridModel {
-        // Convert grid coordinates from canvas space to image space
-        let imageFrame = canvasImage.displayFrame
-        
-        // Calculate the intersection of grid and image
-        let intersection = grid.frame.intersection(imageFrame)
-        
-        // Transform to image-relative coordinates
-        let relativeFrame = CGRect(
-            x: intersection.minX - imageFrame.minX,
-            y: intersection.minY - imageFrame.minY,
-            width: intersection.width,
-            height: intersection.height
-        )
-        
-        // Scale to original image size (accounting for canvas scale)
-        let scaleFactor = 1.0 / canvasImage.scale
-        let imageSpaceFrame = CGRect(
-            x: relativeFrame.minX * scaleFactor,
-            y: relativeFrame.minY * scaleFactor,
-            width: relativeFrame.width * scaleFactor,
-            height: relativeFrame.height * scaleFactor
-        )
-        
-        // Create new grid with transformed coordinates
-        return GridModel(
-            name: grid.name,
-            frame: imageSpaceFrame,
-            rows: grid.rows,
-            columns: grid.columns,
-            thickness: grid.thickness,
-            visualThickness: grid.visualThickness,
-            color: grid.color,
-            lineStyle: grid.lineStyle
-        )
-    }
     
     // MARK: - User Feedback
     
