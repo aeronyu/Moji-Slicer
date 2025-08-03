@@ -21,9 +21,12 @@ struct ContentView: View {
     @State private var showGridTags = true
     @State private var selectedGridID: UUID?
     @State private var showingAllBoards = true  // Show All Boards view by default
+    @State private var showingCodeQuality = false  // Code Quality Analyzer view
     
     var body: some View {
-        if showingAllBoards {
+        if showingCodeQuality {
+            codeQualityView
+        } else if showingAllBoards {
             allBoardsView
         } else {
             canvasView
@@ -38,6 +41,36 @@ struct ContentView: View {
                 showingAllBoards = false
             }
         )
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private var codeQualityView: some View {
+        VStack(spacing: 0) {
+            // Top toolbar for code quality view
+            HStack {
+                Button {
+                    showingCodeQuality = false
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.primary)
+                        .frame(width: 28, height: 28)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
+                }
+                .buttonStyle(.plain)
+                .help("Back to Project")
+                
+                Text("Code Quality Analyzer")
+                    .font(.system(size: 14, weight: .medium))
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(.regularMaterial)
+            
+            CodeQualityView()
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
@@ -96,6 +129,7 @@ struct ContentView: View {
             gridPropertiesSection
             Spacer()
             actionButtons
+            codeQualityButton
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
@@ -253,6 +287,21 @@ struct ContentView: View {
             }
             .buttonStyle(.plain)
             .help("Slice All Grids")
+        }
+    }
+    
+    private var codeQualityButton: some View {
+        Button {
+            showingCodeQuality = true
+        } label: {
+            Image(systemName: "checkmark.seal")
+                .font(.system(size: 14))
+                .foregroundColor(.primary)
+                .frame(width: 28, height: 28)
+                .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
+        }
+        .buttonStyle(.plain)
+        .help("Code Quality Analyzer")
         }
     }
     
