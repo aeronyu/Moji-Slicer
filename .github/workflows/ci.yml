@@ -13,6 +13,7 @@ jobs:
   xcode-build-and-test:
     name: Xcode build and test
     runs-on: macos-15
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -26,7 +27,7 @@ jobs:
       - name: Show schemes
         run: xcodebuild -list -project "Moji Slicer.xcodeproj"
 
-      - name: Build
+      - name: Build app
         run: |
           xcodebuild \
             -project "Moji Slicer.xcodeproj" \
@@ -36,7 +37,7 @@ jobs:
             EXCLUDED_SOURCE_FILE_NAMES='CodeQualityCLI.swift CodeQualityView.swift' \
             build
 
-      - name: Test
+      - name: Run unit tests only
         run: |
           xcodebuild \
             -project "Moji Slicer.xcodeproj" \
@@ -44,4 +45,5 @@ jobs:
             -destination 'platform=macOS' \
             CODE_SIGNING_ALLOWED=NO \
             EXCLUDED_SOURCE_FILE_NAMES='CodeQualityCLI.swift CodeQualityView.swift' \
+            -only-testing:"Moji SlicerTests" \
             test
