@@ -1,630 +1,232 @@
-//
-//  ContentView.swift
-//  Moji Slicer
-//
-//  Created by Aaron Yu on 7/24/25.
-//
-
+import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct ContentView: View {
-    @State private var selectedImages: [CanvasImage] = []
-    @State private var grids: [GridModel] = []
-    @State private var projects: [Project] = []
-    @State private var selectedProject: Project?
-    @State private var selectedTool: CanvasTool = .select
-    @State private var showingImagePicker: Bool = false
-    @State private var scale: Double = 1.0
-    @State private var offset: CGSize = .zero
-    @State private var gridProperties = GridProperties()  // @Observable class instance
-    @State private var showGridTags = true
-    @State private var selectedGridID: UUID?
-    @State private var showingAllBoards = true  // Show All Boards view by default
-    @State private var showingCodeQuality = false  // Code Quality Analyzer view
-    
-    var body: some View {
-        if showingCodeQuality {
-            codeQualityView
-        } else if showingAllBoards {
-            allBoardsView
-        } else {
-            canvasView
-        }
-    }
-    
-    private var allBoardsView: some View {
-        AllBoardsView(
-            projects: $projects,
-            onSelectProject: { project in
-                selectedProject = project
-                showingAllBoards = false
-            }
+    @State private var image: NSImage?
+    @State private var imageName = "No image selected"
+    @State private var rows = 3
+    @State private var columns = 3
+    @State private var horizontalGap = 0.0
+    @State private var verticalGap = 0.0
+    @State private var padding = 0.0
+    @State private var showingImporter = false
+    @State private var message: String?
+    @State private var isErrorMessage = false
+
+    private var safeHorizontalGap: Double { max(horizontalGap, 0) }
+    private var safeVerticalGap: Double { max(verticalGap, 0) }
+    private var safePadding: Double { max(padding, 0) }
+
+    private var frames: [GridFramePlan] {
+        guard let image else { return [] }
+        let spec = GridSpec(
+            rows: rows,
+            columns: columns,
+            bounds: CGRect(origin: .zero, size: image.size),
+            horizontalGap: safeHorizontalGap,
+            verticalGap: safeVerticalGap,
+            padding: safePadding
         )
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        return (try? GridFramePlanner.makeFrames(for: spec)) ?? []
     }
-    
-    private var codeQualityView: some View {
-        VStack(spacing: 0) {
-            // Top toolbar for code quality view
-            HStack {
-                Button {
-                    showingCodeQuality = false
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.primary)
-                        .frame(width: 28, height: 28)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-                }
-                .buttonStyle(.plain)
-                .help("Back to Project")
-                
-                Text("Code Quality Analyzer")
-                    .font(.system(size: 14, weight: .medium))
-                
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(.regularMaterial)
-            
-            CodeQualityView()
+
+    var body: some View {
+        HStack(spacing: 0) {
+            controls
+                .frame(width: 300)
+                .padding()
+
+            Divider()
+
+            preview
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    private var canvasView: some View {
-        VStack(spacing: 0) {
-            topToolbar
-            mainCanvasWithZoomControls
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minWidth: 960, minHeight: 640)
         .fileImporter(
-            isPresented: $showingImagePicker,
+            isPresented: $showingImporter,
             allowedContentTypes: [.image],
-            allowsMultipleSelection: true
-        ) { result in
-            handleImageImport(result)
+            allowsMultipleSelection: false,
+            onCompletion: importImage
+        )
+        .onChange(of: horizontalGap) { _, newValue in
+            if newValue < 0 { horizontalGap = 0 }
         }
-        .onChange(of: selectedProject) { newProject in
-            // Load selected project data
-            if let project = newProject {
-                selectedImages = project.images
-                grids = project.grids
-                if let firstGrid = project.grids.first {
-                    selectedGridID = firstGrid.id
-                }
-                
-                // Auto-open import if project has no images
-                if selectedImages.isEmpty {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        showingImagePicker = true
-                    }
-                }
-            } else {
-                selectedImages = []
-                grids = []
-            }
+        .onChange(of: verticalGap) { _, newValue in
+            if newValue < 0 { verticalGap = 0 }
         }
-        .onChange(of: selectedImages) { _ in
-            syncCanvasToProject()
-        }
-        .onChange(of: grids) { _ in
-            syncCanvasToProject()
-        }
-        .onAppear {
-            // Create sample projects on first launch
-            if projects.isEmpty {
-                createSampleProjects()
-            }
+        .onChange(of: padding) { _, newValue in
+            if newValue < 0 { padding = 0 }
         }
     }
-    
-    private var topToolbar: some View {
-        HStack(spacing: 12) {
-            backButton
-            projectNameField
-            toolSelection
-            gridPropertiesSection
+
+    private var controls: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Moji Slicer v2")
+                .font(.title2.bold())
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Image")
+                    .font(.headline)
+                Text(imageName)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                Button("Import Image") {
+                    showingImporter = true
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Grid")
+                    .font(.headline)
+                Stepper("Rows: \(rows)", value: $rows, in: 1...30)
+                Stepper("Columns: \(columns)", value: $columns, in: 1...30)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Spacing")
+                    .font(.headline)
+                numericField("Horizontal gap", value: $horizontalGap)
+                numericField("Vertical gap", value: $verticalGap)
+                numericField("Padding", value: $padding)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Output")
+                    .font(.headline)
+                Text("\(frames.count) frames")
+                    .foregroundStyle(.secondary)
+
+                Button("Export PNGs") {
+                    exportFrames()
+                }
+                .disabled(image == nil || frames.isEmpty)
+
+                if let message {
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(isErrorMessage ? .red : .secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
             Spacer()
-            actionButtons
-            codeQualityButton
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(.regularMaterial)
-    }
-    
-    private var backButton: some View {
-                // Back button (simplified without text)
-                Button {
-                    showingAllBoards = true
-                    selectedProject = nil
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.primary)
-                        .frame(width: 28, height: 28)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 4))
-                }
-                .buttonStyle(.plain)
-                .help("Back to All Boards")
-    }
-    
-    private var projectNameField: some View {
-        Group {
-            if let project = selectedProject {
-                TextField("Project Name", text: Binding(
-                    get: { project.name },
-                    set: { newName in
-                        if var updatedProject = selectedProject {
-                            updatedProject.name = newName
-                            selectedProject = updatedProject
-                            syncCanvasToProject()
-                        }
-                    }
-                ))
-                .textFieldStyle(.plain)
-                .font(.system(size: 14, weight: .medium))
-                .frame(maxWidth: 200)
-            }
         }
     }
-    
-    private var toolSelection: some View {
-        HStack(spacing: 4) {
-            toolButton(.select)
-            toolButton(.grid)
-            toolButton(.label)
-        }
-        .padding(.horizontal, 4)
-        .padding(.vertical, 2)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
-    }
-    
-    private func toolButton(_ tool: CanvasTool) -> some View {
-        Button {
-            selectedTool = tool
-        } label: {
-            Image(systemName: tool.icon)
-                .font(.system(size: 14))
-                .foregroundColor(selectedTool == tool ? .white : .primary)
-                .frame(width: 28, height: 28)
-                .background(selectedTool == tool ? .primary : Color.clear, in: RoundedRectangle(cornerRadius: 4))
-        }
-        .buttonStyle(.plain)
-        .help(tool.rawValue)
-    }
-    
-    private var gridPropertiesSection: some View {
-        Group {
-            if selectedTool == .grid {
-                HStack(spacing: 8) {
-                    // Grid type picker
-                    Picker("Grid Type", selection: $gridProperties.gridType) {
-                        ForEach(GridType.allCases, id: \.self) { type in
-                            Label(type.rawValue, systemImage: type.icon).tag(type)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 100)
-                    
-                    // Grid size
-                    if gridProperties.gridType == .square {
-                        HStack(spacing: 4) {
-                            TextField("3", value: $gridProperties.squareSize, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 35)
-                            Text("×\(gridProperties.squareSize)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    } else {
-                        HStack(spacing: 2) {
-                            TextField("3", value: $gridProperties.columns, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 35)
-                            Text("×")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            TextField("3", value: $gridProperties.rows, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 35)
-                        }
-                    }
-                    
-                    // Color picker
-                    ColorPicker("", selection: $gridProperties.color)
-                        .labelsHidden()
-                        .frame(width: 28, height: 28)
-                    
-                    // Thickness controls (logical thickness for slicing)
-                    VStack(spacing: 2) {
-                        HStack(spacing: 4) {
-                            Text("Gap:")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                            TextField("0", value: $gridProperties.thickness, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 35)
-                                .help("Logical thickness: pixels to exclude between cells during slicing")
-                        }
-                        Text("\(Int(gridProperties.thickness))px")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
-            }
-        }
-    }
-    
-    private var actionButtons: some View {
-        HStack(spacing: 8) {
-            // Import images
-            Button {
-                showingImagePicker = true
-            } label: {
-                Image(systemName: "photo.badge.plus")
-                    .font(.system(size: 14))
-                    .foregroundColor(.primary)
-                    .frame(width: 28, height: 28)
-                    .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
-            }
-            .buttonStyle(.plain)
-            .help("Import Images")
-            
-            // Toggle grid tags
-            Button {
-                showGridTags.toggle()
-            } label: {
-                Image(systemName: showGridTags ? "tag.fill" : "tag")
-                    .font(.system(size: 14))
-                    .foregroundColor(showGridTags ? .white : .primary)
-                    .frame(width: 28, height: 28)
-                    .background(showGridTags ? .primary : Color.clear, in: RoundedRectangle(cornerRadius: 4))
-            }
-            .buttonStyle(.plain)
-            .help("Toggle Grid Tags")
-            
-            // Slice all grids
-            Button {
-                print("🔪 Global slice requested")
-                sliceAllGrids()
-            } label: {
-                Image(systemName: "scissors")
-                    .font(.system(size: 14))
-                    .foregroundColor(.primary)
-                    .frame(width: 28, height: 28)
-                    .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
-            }
-            .buttonStyle(.plain)
-            .help("Slice All Grids")
-        }
-    }
-    
-    private var codeQualityButton: some View {
-        Button {
-            showingCodeQuality = true
-        } label: {
-            Image(systemName: "checkmark.seal")
-                .font(.system(size: 14))
-                .foregroundColor(.primary)
-                .frame(width: 28, height: 28)
-                .background(.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
-        }
-        .buttonStyle(.plain)
-        .help("Code Quality Analyzer")
-        }
-    }
-    
-    private var mainCanvasWithZoomControls: some View {
-        // Main Canvas Area (full width without sidebar)
+
+    private var preview: some View {
         ZStack {
-                MainCanvasView(
-                    images: $selectedImages,
-                    grids: $grids,
-                    scale: $scale,
-                    offset: $offset,
-                    selectedTool: $selectedTool,
-                    gridProperties: gridProperties,
-                    showGridTags: $showGridTags,
-                    selectedGridID: $selectedGridID
+            Color(nsColor: .windowBackgroundColor)
+            if let image {
+                GridPreview(image: image, frames: frames)
+                    .padding(32)
+            } else {
+                ContentUnavailableView(
+                    "Import a grid image",
+                    systemImage: "square.grid.3x3",
+                    description: Text("Set rows, columns, gaps, and padding to preview each output frame.")
                 )
-                
-                // Zoom controls overlay - bottom left
-                VStack {
-                    Spacer()
-                    HStack {
-                        VStack(spacing: 4) {
-                            // Zoom in
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    scale = min(4.0, scale + 0.25)
-                                }
-                            } label: {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.primary)
-                                    .frame(width: 28, height: 28)
-                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(scale >= 4.0)
-                            .help("Zoom In")
-                            
-                            // Zoom level display/reset
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    scale = 1.0
-                                }
-                            } label: {
-                                Text("\(Int(scale * 100))%")
-                                    .font(.system(size: 10, weight: .medium))
-                                    .foregroundColor(.primary)
-                                    .frame(width: 28, height: 24)
-                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
-                            }
-                            .buttonStyle(.plain)
-                            .help("Reset to 100%")
-                            
-                            // Zoom out
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    scale = max(0.25, scale - 0.25)
-                                }
-                            } label: {
-                                Image(systemName: "minus")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.primary)
-                                    .frame(width: 28, height: 28)
-                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(scale <= 0.25)
-                            .help("Zoom Out")
-                            
-                            // Fit to view
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    scale = 1.0
-                                    offset = .zero
-                                }
-                            } label: {
-                                Image(systemName: "arrow.up.left.and.down.right.and.arrow.up.right.and.down.left")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.primary)
-                                    .frame(width: 28, height: 28)
-                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 6))
-                            }
-                            .buttonStyle(.plain)
-                            .help("Fit to View")
-                        }
-                        .padding(.leading, 16)
-                        .padding(.bottom, 16)
-                        
-                        Spacer()
-                    }
-                }
-            }
-            .onAppear {
-                // Auto-open import dialog if no images are loaded
-                if selectedImages.isEmpty && !showingImagePicker {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        showingImagePicker = true
-                    }
-                }
-            }
-    }
-    
-    // MARK: - Functions
-    private func syncCanvasToProject() {
-        if var project = selectedProject {
-            project.images = selectedImages
-            project.grids = grids
-            project.lastModified = Date()
-            
-            // Update the project in the projects array
-            if let projectIndex = projects.firstIndex(where: { $0.id == project.id }) {
-                projects[projectIndex] = project
-                selectedProject = project
             }
         }
     }
-    
-    private func handleImageImport(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            print("🎯 Importing \(urls.count) images")
-            for (index, url) in urls.enumerated() {
-                // Ensure security scoped access for sandboxed apps
-                let accessing = url.startAccessingSecurityScopedResource()
-                defer {
-                    if accessing {
-                        url.stopAccessingSecurityScopedResource()
-                    }
-                }
-                
-                if let nsImage = NSImage(contentsOf: url) {
-                    print("✅ Successfully loaded image: \(url.lastPathComponent)")
-                    print("   Original size: \(nsImage.size)")
-                    print("   Valid representations: \(nsImage.representations.count)")
-                    
-                    // Calculate a reasonable size for the image
-                    let maxDimension: CGFloat = 300
-                    let aspectRatio = nsImage.size.width / nsImage.size.height
-                    let displaySize: CGSize
-                    
-                    if nsImage.size.width > nsImage.size.height {
-                        displaySize = CGSize(width: maxDimension, height: maxDimension / aspectRatio)
-                    } else {
-                        displaySize = CGSize(width: maxDimension * aspectRatio, height: maxDimension)
-                    }
-                    
-                    var canvasImage = CanvasImage(
-                        image: nsImage,
-                        // Center-based coordinate system: (0,0) is center, small offsets for multiple images
-                        position: CGPoint(x: 0 + (index * 30), y: 0 + (index * 30)) 
-                    )
-                    canvasImage.imageName = url.lastPathComponent
-                    canvasImage.size = displaySize // Set a reasonable display size
-                    
-                    print("📦 Created CanvasImage:")
-                    print("   Name: \(canvasImage.imageName)")
-                    print("   Position: \(canvasImage.position)")
-                    print("   Display size: \(canvasImage.size)")
-                    print("   Has image data: \(canvasImage.image != nil)")
-                    
-                    selectedImages.append(canvasImage)
-                } else {
-                    print("❌ Failed to load image from: \(url)")
-                    print("   File exists: \(FileManager.default.fileExists(atPath: url.path))")
-                    print("   Is readable: \(FileManager.default.isReadableFile(atPath: url.path))")
-                }
+
+    private func numericField(_ label: String, value: Binding<Double>) -> some View {
+        HStack {
+            Text(label)
+            Spacer()
+            TextField("0", value: value, format: .number)
+                .frame(width: 72)
+                .textFieldStyle(.roundedBorder)
+        }
+    }
+
+    private func importImage(_ result: Result<[URL], Error>) {
+        do {
+            guard let url = try result.get().first else { return }
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer {
+                if scoped { url.stopAccessingSecurityScopedResource() }
             }
-            print("📊 Total images after import: \(selectedImages.count)")
-            // Explicitly sync to ensure images are saved to project
-            syncCanvasToProject()
-        case .failure(let error):
-            print("❌ Failed to import images: \(error.localizedDescription)")
+            guard let loadedImage = NSImage(contentsOf: url) else {
+                showMessage("Could not load image.", isError: true)
+                return
+            }
+            image = loadedImage
+            imageName = url.lastPathComponent
+            showMessage("Loaded \(url.lastPathComponent).", isError: false)
+        } catch {
+            showMessage(error.localizedDescription, isError: true)
         }
     }
-    
-    private func createSampleProjects() {
-        // Create multiple sample boards like in the design
-        var sampleProjects: [Project] = []
-        
-        // Create boards with varied timestamps to show different dates
-        let now = Date()
-        
-        let projectData = [
-            ("testing", Calendar.current.date(byAdding: .day, value: -1, to: now)!),
-            ("Untitled", Calendar.current.date(byAdding: .hour, value: -18, to: now)!),
-            ("Untitled", Calendar.current.date(byAdding: .day, value: -30, to: now)!),
-            ("Programming HW1", Calendar.current.date(byAdding: .day, value: -3, to: now)!),
-            ("Wifi", Calendar.current.date(byAdding: .day, value: -7, to: now)!),
-            ("Untitled", Calendar.current.date(byAdding: .hour, value: -12, to: now)!),
-            ("Cloud Billing", Calendar.current.date(byAdding: .day, value: -2, to: now)!)
-        ]
-        
-        for (name, date) in projectData {
-            var project = Project(name: name)
-            project.lastModified = date
-            project.createdDate = date
-            sampleProjects.append(project)
-        }
-        
-        self.projects = sampleProjects
-    }
-    
-    private func sliceAllGrids() {
-        guard !grids.isEmpty else {
-            showSlicingAlert(title: "No Grids", message: "Please create some grids before slicing.")
+
+    private func exportFrames() {
+        guard let image else {
+            showMessage("Import an image before exporting.", isError: true)
             return
         }
-        
-        guard let project = selectedProject, !project.images.isEmpty else {
-            showSlicingAlert(title: "No Images", message: "Please import some images before slicing.")
-            return
-        }
-        
-        print("🔪 Starting to slice all grids...")
-        
-        // Show file picker for output directory
+
         let panel = NSOpenPanel()
+        panel.title = "Choose Export Folder"
+        panel.prompt = "Export"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
         panel.allowsMultipleSelection = false
-        panel.title = "Choose Output Directory for All Grids"
-        panel.prompt = "Select"
-        
-        guard panel.runModal() == .OK,
-              let outputURL = panel.url else {
-            print("❌ User cancelled directory selection")
+
+        guard panel.runModal() == .OK, let directory = panel.url else {
             return
         }
-        
-        // Create main output directory
-        let mainOutputURL = outputURL.appendingPathComponent("MojiSlicer_AllGrids_\(Date().timeIntervalSince1970)")
-        
+
+        let scoped = directory.startAccessingSecurityScopedResource()
+        defer {
+            if scoped { directory.stopAccessingSecurityScopedResource() }
+        }
+
         do {
-            try FileManager.default.createDirectory(at: mainOutputURL, withIntermediateDirectories: true)
-            
-            var totalSlices = 0
-            var processedGrids = 0
-            
-            // Process each grid
-            for grid in grids {
-                print("🔪 Processing grid: \(grid.name)")
-                
-                // Create subdirectory for this grid
-                let gridOutputURL = mainOutputURL.appendingPathComponent("Grid_\(grid.name)")
-                try FileManager.default.createDirectory(at: gridOutputURL, withIntermediateDirectories: true)
-                
-                // Slice this grid against all images
-                for (imageIndex, canvasImage) in project.images.enumerated() {
-                    guard let nsImage = canvasImage.image else {
-                        print("⚠️ Skipping image \(canvasImage.imageName) - no image data")
-                        continue
-                    }
-                    
-                    // Transform grid coordinates to image coordinates
-                    let transformedGrid = GridCoordinateTransformer.transformGridToImageSpace(grid, for: canvasImage)
-                    
-                    // Create subdirectory for this image
-                    let imageOutputURL = gridOutputURL.appendingPathComponent("Image_\(imageIndex + 1)_\(canvasImage.imageName)")
-                    try FileManager.default.createDirectory(at: imageOutputURL, withIntermediateDirectories: true)
-                    
-                    let sliceURLs = try SlicingEngine.sliceGrid(transformedGrid, from: nsImage, outputDirectory: imageOutputURL)
-                    totalSlices += sliceURLs.count
-                    print("✅ Sliced \(sliceURLs.count) pieces from \(canvasImage.imageName) with grid \(grid.name)")
-                }
-                
-                processedGrids += 1
-            }
-            
-            print("🎉 Successfully processed \(processedGrids) grids and created \(totalSlices) slices")
-            print("📁 Output saved to: \(mainOutputURL.path)")
-            
-            // Show success alert
-            showSlicingSuccess(processedGrids: processedGrids, totalSlices: totalSlices, outputPath: mainOutputURL.path)
-            
+            let urls = try GridImageExporter.exportPNGFrames(from: image, frames: frames, to: directory)
+            showMessage("Exported \(urls.count) PNG files.", isError: false)
+            NSWorkspace.shared.activateFileViewerSelecting(urls)
         } catch {
-            print("❌ Error slicing grids: \(error.localizedDescription)")
-            showSlicingAlert(title: "Slicing Failed", message: error.localizedDescription)
+            showMessage(error.localizedDescription, isError: true)
         }
     }
-    
-    // MARK: - User Feedback
-    
-    private func showSlicingSuccess(processedGrids: Int, totalSlices: Int, outputPath: String) {
-        let alert = NSAlert()
-        alert.messageText = "All Grids Sliced Successfully!"
-        alert.informativeText = "Processed \(processedGrids) grids and created \(totalSlices) slices.\n\nOutput saved to:\n\(outputPath)"
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Open Folder")
-        
-        let response = alert.runModal()
-        if response == .alertSecondButtonReturn {
-            NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: outputPath)
-        }
-    }
-    
-    private func showSlicingAlert(title: String, message: String) {
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = message
-        alert.alertStyle = .warning
-        alert.addButton(withTitle: "OK")
-        alert.runModal()
+
+    private func showMessage(_ text: String, isError: Bool) {
+        message = text
+        isErrorMessage = isError
     }
 }
 
-// MARK: - Supporting Types
+private struct GridPreview: View {
+    let image: NSImage
+    let frames: [GridFramePlan]
+
+    var body: some View {
+        GeometryReader { geometry in
+            let scale = min(
+                geometry.size.width / max(image.size.width, 1),
+                geometry.size.height / max(image.size.height, 1)
+            )
+            let displaySize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+            let origin = CGPoint(x: (geometry.size.width - displaySize.width) / 2, y: (geometry.size.height - displaySize.height) / 2)
+
+            ZStack(alignment: .topLeading) {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.none)
+                    .frame(width: displaySize.width, height: displaySize.height)
+                    .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+
+                ForEach(frames) { frame in
+                    Rectangle()
+                        .stroke(.blue, lineWidth: 1)
+                        .frame(width: frame.rect.width * scale, height: frame.rect.height * scale)
+                        .position(x: origin.x + frame.rect.midX * scale, y: origin.y + frame.rect.midY * scale)
+                }
+            }
+        }
+    }
+}
 
 #Preview {
     ContentView()
