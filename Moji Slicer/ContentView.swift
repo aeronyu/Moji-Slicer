@@ -278,6 +278,8 @@ private struct ResizableCropOverlay: View {
     let metrics: PreviewMetrics
     let onCropRectChanged: (CGRect) -> Void
 
+    @State private var dragStartRect: CGRect?
+
     private let minimumSize: CGFloat = 12
     private let handleSize: CGFloat = 12
 
@@ -306,20 +308,27 @@ private struct ResizableCropOverlay: View {
     private func moveGesture() -> some Gesture {
         DragGesture()
             .onChanged { value in
+                let startRect = dragStartRect ?? cropRect
+                dragStartRect = startRect
                 let delta = CGSize(
                     width: value.translation.width / metrics.scale,
                     height: value.translation.height / metrics.scale
                 )
-                updateCropRect(cropRect.offsetBy(dx: delta.width, dy: delta.height))
+                updateCropRect(startRect.offsetBy(dx: delta.width, dy: delta.height))
+            }
+            .onEnded { _ in
+                dragStartRect = nil
             }
     }
 
     private func resizeGesture(for handle: CropHandle) -> some Gesture {
         DragGesture()
             .onChanged { value in
+                let startRect = dragStartRect ?? cropRect
+                dragStartRect = startRect
                 let dx = value.translation.width / metrics.scale
                 let dy = value.translation.height / metrics.scale
-                var rect = cropRect
+                var rect = startRect
 
                 switch handle {
                 case .topLeft:
@@ -341,6 +350,9 @@ private struct ResizableCropOverlay: View {
                 }
 
                 updateCropRect(rect)
+            }
+            .onEnded { _ in
+                dragStartRect = nil
             }
     }
 
