@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'rewrite/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  xcode-build-and-test:
+    name: Xcode build and test
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Show schemes
+        run: xcodebuild -list -project "Moji Slicer.xcodeproj"
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project "Moji Slicer.xcodeproj" \
+            -scheme "Moji Slicer" \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Test
+        run: |
+          xcodebuild \
+            -project "Moji Slicer.xcodeproj" \
+            -scheme "Moji Slicer" \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            test
