@@ -4,6 +4,14 @@ Moji Slicer is a native macOS app for turning one grid image of emojis, stickers
 
 It is designed for cases where you have a single image that contains many emojis arranged in rows and columns, and you want to quickly slice that sheet into separate custom emoji files for chat apps, messaging tools, or personal asset libraries.
 
+## Repository Description
+
+Suggested GitHub About description:
+
+```text
+A native macOS app for slicing emoji, sticker, and icon grid images into individual PNG files.
+```
+
 ## Current Status
 
 Moji Slicer is currently in an early v2 rewrite. The app now has the core workflow working:
@@ -16,6 +24,22 @@ Moji Slicer is currently in an early v2 rewrite. The app now has the core workfl
 - Export each slice as a PNG file.
 
 The app is usable for basic grid slicing, but some polishing work is still planned.
+
+## Download
+
+Published builds are available from the repository's GitHub Releases page.
+
+The first planned downloadable release is:
+
+```text
+v0.1.0
+```
+
+Download the macOS ZIP file, unzip it, and move `Moji Slicer.app` to your Applications folder.
+
+### macOS security note
+
+Current release builds are unsigned and not notarized. macOS may show a Gatekeeper warning the first time you open the app.
 
 ## Features
 
@@ -70,6 +94,23 @@ emoji_003.png
 7. Confirm the blue preview boxes line up with each emoji.
 8. Click **Export PNGs**.
 9. Choose an output folder.
+
+## Releasing
+
+The repository includes a GitHub Actions release workflow.
+
+To publish a new release:
+
+1. Update the `VERSION` file, for example `0.1.0`.
+2. Commit and merge that change to `main`.
+3. Create and push a matching tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The release workflow will build the macOS app, create a ZIP file, generate a SHA-256 checksum, and attach both files to a GitHub Release.
 
 ## Development
 
