@@ -7,11 +7,11 @@
 
 import Foundation
 
-/// Command-line interface for running code quality analysis
-@main
+/// Non-executable CLI wrapper. To run as a real CLI, move this file into a separate
+/// Command Line Tool target and restore the `@main` attribute.
 struct CodeQualityCLI {
-    static func main() {
-        let arguments = CommandLine.arguments
+    static func main(args: [String] = CommandLine.arguments) {
+        let arguments = args
         
         if arguments.count < 2 {
             printUsage()

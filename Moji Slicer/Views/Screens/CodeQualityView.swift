@@ -195,7 +195,7 @@ struct CodeQualityView: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
     }
     
-    private func reportView(_ report: CodeQualityReport) -> VStack<TupleView<some View>> {
+    private func reportView(_ report: CodeQualityReport) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             HStack {
