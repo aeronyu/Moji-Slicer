@@ -1,10 +1,10 @@
 import CoreGraphics
 
-struct GridCell: Equatable, Identifiable {
-    let index: Int
-    let row: Int
+struct GridFrame: Equatable, Identifiable {
+    let number: Int
+    let line: Int
     let column: Int
-    let rect: CGRect
+    let frame: CGRect
 
-    var id: Int { index }
+    var id: Int { number }
 }
