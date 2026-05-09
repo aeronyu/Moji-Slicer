@@ -6,6 +6,7 @@
 //
 
 import CoreGraphics
+import Foundation
 
 enum ImageSlicerError: Error, Equatable, LocalizedError {
     case invalidRowCount(Int)
