@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -11,6 +12,7 @@ struct ContentView: View {
     @State private var padding = 0.0
     @State private var showingImporter = false
     @State private var message: String?
+    @State private var isErrorMessage = false
 
     private var frames: [GridFramePlan] {
         guard let image else { return [] }
@@ -81,9 +83,17 @@ struct ContentView: View {
                     .font(.headline)
                 Text("\(frames.count) frames")
                     .foregroundStyle(.secondary)
+
+                Button("Export PNGs") {
+                    exportFrames()
+                }
+                .disabled(image == nil || frames.isEmpty)
+
                 if let message {
                     Text(message)
-                        .foregroundStyle(.red)
+                        .font(.caption)
+                        .foregroundStyle(isErrorMessage ? .red : .secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
 
@@ -125,15 +135,52 @@ struct ContentView: View {
                 if scoped { url.stopAccessingSecurityScopedResource() }
             }
             guard let loadedImage = NSImage(contentsOf: url) else {
-                message = "Could not load image."
+                showMessage("Could not load image.", isError: true)
                 return
             }
             image = loadedImage
             imageName = url.lastPathComponent
-            message = nil
+            showMessage("Loaded \(url.lastPathComponent).", isError: false)
         } catch {
-            message = error.localizedDescription
+            showMessage(error.localizedDescription, isError: true)
         }
+    }
+
+    private func exportFrames() {
+        guard let image else {
+            showMessage("Import an image before exporting.", isError: true)
+            return
+        }
+
+        let panel = NSOpenPanel()
+        panel.title = "Choose Export Folder"
+        panel.prompt = "Export"
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+
+        guard panel.runModal() == .OK, let directory = panel.url else {
+            return
+        }
+
+        let scoped = directory.startAccessingSecurityScopedResource()
+        defer {
+            if scoped { directory.stopAccessingSecurityScopedResource() }
+        }
+
+        do {
+            let urls = try GridImageExporter.exportPNGFrames(from: image, frames: frames, to: directory)
+            showMessage("Exported \(urls.count) PNG files.", isError: false)
+            NSWorkspace.shared.activateFileViewerSelecting(urls)
+        } catch {
+            showMessage(error.localizedDescription, isError: true)
+        }
+    }
+
+    private func showMessage(_ text: String, isError: Bool) {
+        message = text
+        isErrorMessage = isError
     }
 }
 
