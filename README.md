@@ -14,7 +14,7 @@ This branch starts the **Moji Slicer v2** rewrite. The immediate goal is to repl
 ### First milestone
 
 - Establish a clean SwiftUI app shell.
-- Keep GitHub Actions green for Xcode build and tests.
+- Keep GitHub Actions green for Xcode build and focused unit tests.
 - Move the old code-quality demo out of the active app path.
 - Add small, testable grid-layout logic before reconnecting image export.
 
@@ -54,4 +54,4 @@ Open the project in Xcode:
 open "Moji Slicer.xcodeproj"
 ```
 
-GitHub Actions runs Xcode build and test on pull requests. The current CI intentionally excludes legacy code-quality files from compilation while the v2 app path is rebuilt.
+GitHub Actions runs an app build plus focused unit tests on pull requests. The current CI intentionally excludes legacy code-quality files from compilation while the v2 app path is rebuilt.
