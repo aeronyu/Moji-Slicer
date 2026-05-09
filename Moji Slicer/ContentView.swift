@@ -14,15 +14,19 @@ struct ContentView: View {
     @State private var message: String?
     @State private var isErrorMessage = false
 
+    private var safeHorizontalGap: Double { max(horizontalGap, 0) }
+    private var safeVerticalGap: Double { max(verticalGap, 0) }
+    private var safePadding: Double { max(padding, 0) }
+
     private var frames: [GridFramePlan] {
         guard let image else { return [] }
         let spec = GridSpec(
             rows: rows,
             columns: columns,
             bounds: CGRect(origin: .zero, size: image.size),
-            horizontalGap: horizontalGap,
-            verticalGap: verticalGap,
-            padding: padding
+            horizontalGap: safeHorizontalGap,
+            verticalGap: safeVerticalGap,
+            padding: safePadding
         )
         return (try? GridFramePlanner.makeFrames(for: spec)) ?? []
     }
@@ -45,6 +49,15 @@ struct ContentView: View {
             allowsMultipleSelection: false,
             onCompletion: importImage
         )
+        .onChange(of: horizontalGap) { _, newValue in
+            if newValue < 0 { horizontalGap = 0 }
+        }
+        .onChange(of: verticalGap) { _, newValue in
+            if newValue < 0 { verticalGap = 0 }
+        }
+        .onChange(of: padding) { _, newValue in
+            if newValue < 0 { padding = 0 }
+        }
     }
 
     private var controls: some View {
