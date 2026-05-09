@@ -33,6 +33,7 @@ jobs:
             -scheme "Moji Slicer" \
             -destination 'platform=macOS' \
             CODE_SIGNING_ALLOWED=NO \
+            EXCLUDED_SOURCE_FILE_NAMES=CodeQualityCLI.swift \
             build
 
       - name: Test
@@ -42,4 +43,5 @@ jobs:
             -scheme "Moji Slicer" \
             -destination 'platform=macOS' \
             CODE_SIGNING_ALLOWED=NO \
+            EXCLUDED_SOURCE_FILE_NAMES=CodeQualityCLI.swift \
             test
